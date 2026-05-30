@@ -22,24 +22,23 @@ Cada vez que un jugador sube de nivel, el sistema elige **aleatoriamente** una d
 - Al hacer login, todos los bonuses se reaplicán automáticamente como auras stackables.
 - Comando `.bonus` para ver los bonuses propios o los del jugador seleccionado.
 
+### Saltos masivos de nivel
+
+Si un jugador sube de nivel 1 a 80 de golpe (por comando GM o cualquier otro medio), el sistema aplica **un roll por cada nivel ganado** — no se pierde ninguno.
+
+- Subida normal (1 nivel): muestra el stat ganado en pantalla.
+- Salto masivo (varios niveles): muestra un resumen e invita a usar `.bonus`.
+
 ---
 
 ## Instalación
 
-### 1. Crear la tabla en la base de datos de personajes
-```bash
-mysql -u acore -p acore_characters < LevelStats_db.sql
-```
-
-### 2. Copiar el script Lua
 ```
 LevelStats.lua  →  <server>/lua_scripts/
-```
-
-### 3. Recargar en la consola del worldserver
-```
 .reload ale
 ```
+
+> La tabla `custom_level_stats` se crea automáticamente en `acore_characters` al cargar el script si no existe.
 
 ---
 
@@ -70,8 +69,8 @@ Edita el bloque `Config` al inicio de `LevelStats.lua`:
 
 | Archivo | Descripción |
 |---------|-------------|
-| `LevelStats.lua` | Script principal |
-| `LevelStats_db.sql` | Tabla `custom_level_stats` en `acore_characters` |
+| `LevelStats.lua` | Script principal (auto-crea la tabla al cargar) |
+| `LevelStats_db.sql` | Tabla SQL de referencia (opcional, el script la crea solo) |
 
 ---
 
