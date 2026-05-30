@@ -438,20 +438,20 @@ minimapBtn:SetSize(31, 31)
 minimapBtn:SetFrameStrata("MEDIUM")
 minimapBtn:SetFrameLevel(8)
 
--- Icon shown normally (no black background — SetNormalTexture is transparent by default)
-minimapBtn:SetNormalTexture("Interface/Icons/INV_Misc_Note_01")
+-- Small icon (17px) so it fits inside the circular border — same as native WoW minimap buttons
+local icon = minimapBtn:CreateTexture(nil, "BACKGROUND")
+icon:SetSize(17, 17)
+icon:SetTexture("Interface/Icons/INV_Misc_Note_01")
+icon:SetPoint("CENTER", minimapBtn, "CENTER", 0, 0)
 
--- Glow when hovered
-minimapBtn:SetHighlightTexture("Interface/Minimap/UI-Minimap-ZoomButton-Highlight")
-
--- Slightly dimmer when clicked
-minimapBtn:SetPushedTexture("Interface/Minimap/UI-Minimap-ZoomButton-Highlight")
-
--- Circular gold border on top of everything
+-- Circular golden border (54px) on top — this is what makes it look round
 local border = minimapBtn:CreateTexture(nil, "OVERLAY")
-border:SetTexture("Interface/Minimap/MiniMap-TrackingBorder")
 border:SetSize(54, 54)
+border:SetTexture("Interface/Minimap/MiniMap-TrackingBorder")
 border:SetPoint("CENTER", minimapBtn, "CENTER", 0, 0)
+
+-- Subtle glow on hover
+minimapBtn:SetHighlightTexture("Interface/Minimap/UI-Minimap-ZoomButton-Highlight")
 
 UpdateMinimapPos(minimapBtn)
 
