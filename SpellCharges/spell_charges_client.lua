@@ -1,5 +1,5 @@
 -- AzerothCore ALE + AIO spell charges (client side).
--- Original author: Crow (crow0385) https://github.com/crow0385
+-- Original author: Crow (crow0385)
 -- This file is sent to the client by spell_charges.lua via AIO.AddAddon().
 -- Requirements:
 --   * AIO v1.75 client addon installed at: WoW/Interface/AddOns/AIO_Client/

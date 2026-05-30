@@ -1,6 +1,6 @@
 # SpellCharges
 
-> **Autor original:** [Crow (crow0385)](https://github.com/crow0385)
+> **Autor original:** Crow (crow0385)
 
 Sistema de cargas para hechizos en **AzerothCore WotLK 3.3.5a** con **mod-ale** + **AIO v1.75**.
 
