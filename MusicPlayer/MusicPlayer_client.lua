@@ -421,7 +421,7 @@ end
 local MusicPlayerClient = AIO.AddHandlers("MusicPlayer", {})
 
 -- Server sends the full track list (on login and after rescan)
-function MusicPlayerClient.SetTracks(handler, player, trackList)
+function MusicPlayerClient.SetTracks(handler, trackList)
     TRACKS = trackList or {}
     -- Reset playback if current track is now out of range
     if state.current > #TRACKS then
@@ -440,7 +440,7 @@ function MusicPlayerClient.SetTracks(handler, player, trackList)
     end
 end
 
-function MusicPlayerClient.ShowUI(handler, player)
+function MusicPlayerClient.ShowUI(handler)
     OpenFrame()
 end
 
