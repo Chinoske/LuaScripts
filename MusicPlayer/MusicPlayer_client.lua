@@ -422,6 +422,79 @@ function MusicPlayerClient.ShowUI(handler, player)
 end
 
 -- ─────────────────────────────────────────────────────────────
+-- MINIMAP BUTTON
+-- ─────────────────────────────────────────────────────────────
+local minimapAngle = 220  -- degrees; drag to reposition
+
+local function UpdateMinimapPos(btn)
+    local rad = math.rad(minimapAngle)
+    btn:SetPoint("CENTER", Minimap, "CENTER",
+        80 * math.cos(rad),
+        80 * math.sin(rad))
+end
+
+local minimapBtn = CreateFrame("Button", "MusicPlayerMinimapBtn", Minimap)
+minimapBtn:SetSize(32, 32)
+minimapBtn:SetFrameStrata("MEDIUM")
+minimapBtn:SetFrameLevel(8)
+
+-- Circular gold border (standard minimap button look)
+local border = minimapBtn:CreateTexture(nil, "OVERLAY")
+border:SetTexture("Interface/Minimap/MiniMap-TrackingBorder")
+border:SetSize(54, 54)
+border:SetPoint("TOPLEFT", minimapBtn, "TOPLEFT", -11, 11)
+
+-- Music note icon
+local icon = minimapBtn:CreateTexture(nil, "BACKGROUND")
+icon:SetTexture("Interface/Icons/INV_Misc_Note_01")
+icon:SetSize(20, 20)
+icon:SetPoint("CENTER")
+
+-- Highlight on hover
+local highlight = minimapBtn:CreateTexture(nil, "HIGHLIGHT")
+highlight:SetTexture("Interface/Minimap/UI-Minimap-ZoomButton-Highlight")
+highlight:SetSize(32, 32)
+highlight:SetPoint("CENTER")
+
+UpdateMinimapPos(minimapBtn)
+
+-- Drag around the minimap border
+minimapBtn:RegisterForDrag("LeftButton")
+minimapBtn:SetScript("OnDragStart", function(self)
+    self:SetScript("OnUpdate", function()
+        local mx, my = Minimap:GetCenter()
+        local cx, cy = GetCursorPosition()
+        local s = UIParent:GetEffectiveScale()
+        minimapAngle = math.deg(math.atan2((cy / s) - my, (cx / s) - mx))
+        UpdateMinimapPos(self)
+    end)
+end)
+minimapBtn:SetScript("OnDragStop", function(self)
+    self:SetScript("OnUpdate", nil)
+end)
+
+-- Click: toggle player frame
+minimapBtn:SetScript("OnClick", function()
+    if MusicPlayerFrame and MusicPlayerFrame:IsShown() then
+        MusicPlayerFrame:Hide()
+    else
+        OpenFrame()
+    end
+end)
+
+-- Tooltip
+minimapBtn:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+    GameTooltip:AddLine("Music Player")
+    GameTooltip:AddLine("Click to toggle", 0.7, 0.7, 0.7)
+    GameTooltip:AddLine("Drag to reposition", 0.5, 0.5, 0.5)
+    GameTooltip:Show()
+end)
+minimapBtn:SetScript("OnLeave", function()
+    GameTooltip:Hide()
+end)
+
+-- ─────────────────────────────────────────────────────────────
 -- SLASH COMMANDS
 -- ─────────────────────────────────────────────────────────────
 SLASH_MUSICPLAYER1 = "/musicplayer"
