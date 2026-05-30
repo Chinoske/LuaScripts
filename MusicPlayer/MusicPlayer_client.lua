@@ -1,24 +1,16 @@
 -- ============================================================
 -- MusicPlayer_client.lua — Client-side WoW addon (3.3.5a)
 -- Delivered via AIO v1.75 from the AzerothCore server.
--- ============================================================
--- HOW TO ADD SONGS:
---   Drop MP3/OGG files in  WoW/Interface/AddOns/MusicPlayer/music/
---   then add an entry to TRACKS below and reload the script on
---   the server (.reload ale) so AIO re-sends the updated addon.
+-- Drop MP3/OGG files in:  WoW/Interface/AddOns/MusicPlayer/music/
+-- The server scans the folder automatically on load.
 -- ============================================================
 
--- If running on the server, register this file with AIO and stop.
 if AIO.AddAddon() then return end
 
 -- ─────────────────────────────────────────────────────────────
--- TRACK LIST — edit this table to add/remove songs
+-- TRACK LIST — filled dynamically by the server via SetTracks
 -- ─────────────────────────────────────────────────────────────
-local TRACKS = {
-    { name = "Track 01", artist = "Artist 1", file = "Interface/AddOns/MusicPlayer/music/track01.mp3", duration = 180 },
-    { name = "Track 02", artist = "Artist 2", file = "Interface/AddOns/MusicPlayer/music/track02.mp3", duration = 210 },
-    { name = "Track 03", artist = "Artist 3", file = "Interface/AddOns/MusicPlayer/music/track03.mp3", duration = 240 },
-}
+local TRACKS = {}
 
 -- ─────────────────────────────────────────────────────────────
 -- PLAYER STATE
@@ -26,12 +18,23 @@ local TRACKS = {
 local state = {
     current   = 1,
     playing   = false,
-    startTime = 0,   -- GetTime() when Play/Resume was called
-    elapsed   = 0,   -- seconds accumulated before the last pause
+    startTime = 0,
+    elapsed   = 0,
 }
 
 -- ─────────────────────────────────────────────────────────────
--- HELPER: elapsed seconds since track started (respects pauses)
+-- FORWARD REFS — filled after frame creation
+-- ─────────────────────────────────────────────────────────────
+local MusicPlayerFrame
+local trackNameText, trackArtistText
+local progressBarFill, timeText, barContainer
+local playPauseBtn
+local volumeText
+local playlistContent, playlistScroll
+local playlistButtons = {}
+
+-- ─────────────────────────────────────────────────────────────
+-- HELPERS
 -- ─────────────────────────────────────────────────────────────
 local function GetElapsed()
     if state.playing then
@@ -40,35 +43,36 @@ local function GetElapsed()
     return state.elapsed
 end
 
--- ─────────────────────────────────────────────────────────────
--- HELPER: "M:SS" formatter
--- ─────────────────────────────────────────────────────────────
 local function FormatTime(secs)
+    if not secs or secs <= 0 then return "0:00" end
     secs = math.floor(secs)
-    if secs < 0 then secs = 0 end
-    local m = math.floor(secs / 60)
-    local s = secs % 60
-    return string.format("%d:%02d", m, s)
+    return string.format("%d:%02d", math.floor(secs / 60), secs % 60)
+end
+
+local function GetVolume()
+    return tonumber(GetCVar("Sound_MusicVolume")) or 0.8
+end
+
+local function SetVolume(v)
+    v = math.max(0.0, math.min(1.0, v))
+    v = math.floor(v * 10 + 0.5) / 10
+    SetCVar("Sound_MusicVolume", tostring(v))
+    if volumeText then
+        volumeText:SetText(math.floor(v * 100 + 0.5) .. "%")
+    end
 end
 
 -- ─────────────────────────────────────────────────────────────
--- FORWARD DECLARATIONS (UI references filled after frame creation)
--- ─────────────────────────────────────────────────────────────
-local MusicPlayerFrame
-local trackNameText, trackArtistText
-local progressBarFill, timeText
-local playPauseBtn
-local playlistButtons = {}
-
--- ─────────────────────────────────────────────────────────────
--- CORE PLAYBACK FUNCTIONS
+-- PLAYLIST HIGHLIGHT
 -- ─────────────────────────────────────────────────────────────
 local function UpdatePlaylistHighlight()
     for i, btn in ipairs(playlistButtons) do
-        if i == state.current then
-            btn:GetFontString():SetTextColor(1, 1, 0)     -- yellow = active
-        else
-            btn:GetFontString():SetTextColor(0.8, 0.8, 0.8) -- grey
+        if btn:IsShown() then
+            if i == state.current then
+                btn:GetFontString():SetTextColor(1, 1, 0)
+            else
+                btn:GetFontString():SetTextColor(0.8, 0.8, 0.8)
+            end
         end
     end
 end
@@ -78,18 +82,23 @@ local function UpdateNowPlaying()
     if not t then return end
     if trackNameText   then trackNameText:SetText(t.name)   end
     if trackArtistText then trackArtistText:SetText(t.artist) end
+    if timeText then
+        timeText:SetText("0:00 / " .. FormatTime(t.duration))
+    end
     UpdatePlaylistHighlight()
 end
 
+-- ─────────────────────────────────────────────────────────────
+-- PLAYBACK
+-- ─────────────────────────────────────────────────────────────
 local function PlayTrack(index)
-    if index < 1 then index = #TRACKS end
-    if index > #TRACKS then index = 1 end
+    if not TRACKS[index] then return end
     state.current   = index
     state.playing   = true
     state.startTime = GetTime()
     state.elapsed   = 0
     StopMusic()
-    PlayMusic(TRACKS[state.current].file)
+    PlayMusic(TRACKS[index].file)
     UpdateNowPlaying()
     if playPauseBtn then playPauseBtn:SetText("|| Pause") end
 end
@@ -102,7 +111,6 @@ local function PauseTrack()
     if playPauseBtn then playPauseBtn:SetText("|> Play") end
 end
 
--- WoW 3.3.5a has no seek API, so Resume re-starts from the beginning.
 local function ResumeTrack()
     if state.playing then return end
     state.elapsed   = 0
@@ -113,51 +121,109 @@ local function ResumeTrack()
 end
 
 local function NextTrack()
-    local next = state.current + 1
-    if next > #TRACKS then next = 1 end
-    PlayTrack(next)
+    if #TRACKS == 0 then return end
+    PlayTrack((state.current % #TRACKS) + 1)
 end
 
 local function PrevTrack()
-    local prev = state.current - 1
-    if prev < 1 then prev = #TRACKS end
-    PlayTrack(prev)
+    if #TRACKS == 0 then return end
+    PlayTrack(((state.current - 2) % #TRACKS) + 1)
 end
 
 -- ─────────────────────────────────────────────────────────────
--- VOLUME HELPERS
+-- REBUILD PLAYLIST (called on frame creation and after SetTracks)
 -- ─────────────────────────────────────────────────────────────
-local volumeText   -- forward ref filled below
+local function RebuildPlaylist()
+    if not playlistContent then return end
 
-local function GetVolume()
-    return tonumber(GetCVar("Sound_MusicVolume")) or 0.8
-end
+    local rowH = 22
+    playlistContent:SetHeight(math.max(rowH, rowH * #TRACKS))
 
-local function SetVolume(v)
-    if v < 0.0 then v = 0.0 end
-    if v > 1.0 then v = 1.0 end
-    v = math.floor(v * 10 + 0.5) / 10   -- snap to 0.1 steps
-    SetCVar("Sound_MusicVolume", tostring(v))
-    if volumeText then
-        volumeText:SetText(math.floor(v * 100 + 0.5) .. "%")
+    -- Show/update existing buttons, create new ones if needed
+    for i, track in ipairs(TRACKS) do
+        local btn = playlistButtons[i]
+        if not btn then
+            btn = CreateFrame("Button", nil, playlistContent)
+            btn:SetHeight(rowH)
+            btn:SetPoint("TOPLEFT",  playlistContent, "TOPLEFT",  4, -(i-1)*rowH)
+            btn:SetPoint("TOPRIGHT", playlistContent, "TOPRIGHT", -4, -(i-1)*rowH)
+
+            local hl = btn:CreateTexture(nil, "BACKGROUND")
+            hl:SetAllPoints()
+            hl:SetTexture(1, 1, 1, 0.05)
+            btn:SetHighlightTexture(hl)
+
+            local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            lbl:SetPoint("LEFT",  btn, "LEFT",  2, 0)
+            lbl:SetPoint("RIGHT", btn, "RIGHT", -2, 0)
+            lbl:SetJustifyH("LEFT")
+            btn.GetFontString = function() return lbl end
+
+            btn:SetScript("OnEnter", function(self)
+                if self._idx ~= state.current then
+                    self:GetFontString():SetTextColor(1, 1, 1)
+                end
+            end)
+            btn:SetScript("OnLeave", function(self)
+                if self._idx == state.current then
+                    self:GetFontString():SetTextColor(1, 1, 0)
+                else
+                    self:GetFontString():SetTextColor(0.8, 0.8, 0.8)
+                end
+            end)
+            playlistButtons[i] = btn
+        end
+
+        btn._idx = i
+        local dur = (track.duration and track.duration > 0)
+            and ("  |cff666666[" .. FormatTime(track.duration) .. "]|r")
+            or ""
+        btn:GetFontString():SetText(
+            "|cffcccccc" .. i .. ".|r  " .. track.name ..
+            "  |cff888888— " .. track.artist .. "|r" .. dur
+        )
+        btn:SetScript("OnClick", function(self) PlayTrack(self._idx) end)
+        btn:Show()
     end
+
+    -- Hide unused buttons
+    for i = #TRACKS + 1, #playlistButtons do
+        playlistButtons[i]:Hide()
+    end
+
+    -- Empty state label
+    if not playlistContent._emptyLbl then
+        local lbl = playlistContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        lbl:SetPoint("CENTER", playlistContent, "CENTER", 0, 0)
+        lbl:SetTextColor(0.5, 0.5, 0.5)
+        lbl:SetJustifyH("CENTER")
+        playlistContent._emptyLbl = lbl
+    end
+    if #TRACKS == 0 then
+        playlistContent._emptyLbl:SetText(
+            "No tracks found.\n" ..
+            "Drop MP3/OGG files in:\n" ..
+            "Interface/AddOns/MusicPlayer/music/\n" ..
+            "then click  Rescan."
+        )
+        playlistContent._emptyLbl:Show()
+    else
+        playlistContent._emptyLbl:Hide()
+    end
+
+    UpdatePlaylistHighlight()
 end
 
 -- ─────────────────────────────────────────────────────────────
--- FRAME BUILDER
+-- BUILD MAIN FRAME (called once, lazily)
 -- ─────────────────────────────────────────────────────────────
 local function BuildFrame()
-    if MusicPlayerFrame then
-        MusicPlayerFrame:Show()
-        return
-    end
+    if MusicPlayerFrame then return end
 
-    -- ── MAIN FRAME ──────────────────────────────────────────
     local f = CreateFrame("Frame", "MusicPlayerFrame", UIParent)
     MusicPlayerFrame = f
-    f:SetWidth(360)
-    f:SetHeight(340)
-    f:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    f:SetSize(360, 340)
+    f:SetPoint("CENTER")
     f:SetMovable(true)
     f:SetClampedToScreen(true)
     f:SetFrameStrata("HIGH")
@@ -166,256 +232,213 @@ local function BuildFrame()
     f:SetScript("OnDragStart", function() f:StartMoving() end)
     f:SetScript("OnDragStop",  function() f:StopMovingOrSizing() end)
 
-    -- Background
     f:SetBackdrop({
-        bgFile   = "Interface/Tooltips/UI-Tooltip-Background",
+        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
         edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-        tile     = true, tileSize = 16, edgeSize = 16,
-        insets   = { left = 4, right = 4, top = 4, bottom = 4 },
+        tile = true, tileSize = 16, edgeSize = 16,
+        insets = { left = 4, right = 4, top = 4, bottom = 4 },
     })
     f:SetBackdropColor(0.06, 0.06, 0.06, 0.96)
     f:SetBackdropBorderColor(0.85, 0.1, 0.1, 1)
 
-    -- ── HEADER ──────────────────────────────────────────────
+    -- Header
     local header = CreateFrame("Frame", nil, f)
     header:SetHeight(38)
     header:SetPoint("TOPLEFT",  f, "TOPLEFT",  4, -4)
     header:SetPoint("TOPRIGHT", f, "TOPRIGHT", -4, -4)
-    header:SetBackdrop({
-        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
-        tile   = true, tileSize = 16,
-    })
+    header:SetBackdrop({ bgFile = "Interface/Tooltips/UI-Tooltip-Background", tile = true, tileSize = 16 })
     header:SetBackdropColor(0.85, 0.1, 0.1, 1)
-
-    local headerIcon = header:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    headerIcon:SetPoint("LEFT", header, "LEFT", 8, 0)
-    headerIcon:SetText("|> Music Player")
-    headerIcon:SetTextColor(1, 1, 1)
-
-    -- Close button (standard WoW style)
-    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
-    closeBtn:SetScript("OnClick", function() f:Hide() end)
-
-    -- Make header draggable too
     header:EnableMouse(true)
     header:RegisterForDrag("LeftButton")
     header:SetScript("OnDragStart", function() f:StartMoving() end)
     header:SetScript("OnDragStop",  function() f:StopMovingOrSizing() end)
 
-    -- ── NOW PLAYING ─────────────────────────────────────────
-    local nowY = -52   -- below header
+    local titleLbl = header:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    titleLbl:SetPoint("LEFT", header, "LEFT", 10, 0)
+    titleLbl:SetText("|> Music Player")
+    titleLbl:SetTextColor(1, 1, 1)
 
+    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
+    closeBtn:SetScript("OnClick", function() f:Hide() end)
+
+    -- Now Playing
     trackNameText = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    trackNameText:SetPoint("TOP", f, "TOP", 0, nowY)
+    trackNameText:SetPoint("TOP", f, "TOP", 0, -52)
     trackNameText:SetWidth(320)
     trackNameText:SetJustifyH("CENTER")
     trackNameText:SetTextColor(1, 1, 1)
-    trackNameText:SetText(TRACKS[1].name)
+    trackNameText:SetText("No track loaded")
 
     trackArtistText = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     trackArtistText:SetPoint("TOP", trackNameText, "BOTTOM", 0, -4)
     trackArtistText:SetWidth(320)
     trackArtistText:SetJustifyH("CENTER")
     trackArtistText:SetTextColor(0.7, 0.7, 0.7)
-    trackArtistText:SetText(TRACKS[1].artist)
+    trackArtistText:SetText("—")
 
-    -- ── PROGRESS BAR ────────────────────────────────────────
-    local barContainer = CreateFrame("Frame", nil, f)
+    -- Progress bar
+    barContainer = CreateFrame("Frame", nil, f)
     barContainer:SetPoint("TOPLEFT",  f, "TOPLEFT",  14, -108)
     barContainer:SetPoint("TOPRIGHT", f, "TOPRIGHT", -14, -108)
     barContainer:SetHeight(12)
-    barContainer:SetBackdrop({
-        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
-        tile   = true, tileSize = 8,
-    })
+    barContainer:SetBackdrop({ bgFile = "Interface/Tooltips/UI-Tooltip-Background", tile = true, tileSize = 8 })
     barContainer:SetBackdropColor(0.15, 0.15, 0.15, 1)
 
-    local fillTex = barContainer:CreateTexture(nil, "ARTWORK")
-    fillTex:SetPoint("TOPLEFT",  barContainer, "TOPLEFT",  0, 0)
-    fillTex:SetPoint("BOTTOMLEFT", barContainer, "BOTTOMLEFT", 0, 0)
-    fillTex:SetWidth(1)   -- updated each frame via OnUpdate
-    fillTex:SetTexture(0.85, 0.1, 0.1, 1)
-    progressBarFill = fillTex
+    progressBarFill = barContainer:CreateTexture(nil, "ARTWORK")
+    progressBarFill:SetPoint("TOPLEFT",    barContainer, "TOPLEFT",    0, 0)
+    progressBarFill:SetPoint("BOTTOMLEFT", barContainer, "BOTTOMLEFT", 0, 0)
+    progressBarFill:SetWidth(1)
+    progressBarFill:SetTexture(0.85, 0.1, 0.1, 1)
 
     timeText = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    timeText:SetPoint("TOP", barContainer, "BOTTOM", 0, -4)
+    timeText:SetPoint("TOP", barContainer, "BOTTOM", 0, -3)
     timeText:SetTextColor(0.6, 0.6, 0.6)
-    timeText:SetText("0:00 / " .. FormatTime(TRACKS[1].duration))
+    timeText:SetText("0:00 / 0:00")
 
-    -- ── TRANSPORT CONTROLS ──────────────────────────────────
-    -- Row centered at y = -148 from top
+    -- Transport controls
     local ctrlY = -150
-
-    -- Helper to create a transport button
     local function MakeBtn(label, w, xOff, onClick)
         local btn = CreateFrame("Button", nil, f, "GameMenuButtonTemplate")
-        btn:SetWidth(w)
-        btn:SetHeight(28)
+        btn:SetSize(w, 26)
         btn:SetPoint("TOP", f, "TOP", xOff, ctrlY)
         btn:SetText(label)
         btn:SetScript("OnClick", onClick)
         return btn
     end
 
-    -- [|<]  go to previous track
-    MakeBtn("|<", 36, -120, function() PrevTrack() end)
-
-    -- [<<]  if elapsed >= 5s restart track, else prev track
-    MakeBtn("<<", 36, -76, function()
-        if GetElapsed() >= 5 then
-            PlayTrack(state.current)
-        else
-            PrevTrack()
-        end
+    MakeBtn("|<", 34, -122, PrevTrack)
+    MakeBtn("<<", 34, -80, function()
+        if GetElapsed() >= 5 then PlayTrack(state.current) else PrevTrack() end
     end)
-
-    -- [|> Play] / [|| Pause]
-    playPauseBtn = MakeBtn("|> Play", 80, 0, function()
+    playPauseBtn = MakeBtn("|> Play", 76, 0, function()
         if state.playing then
             PauseTrack()
+        elseif state.elapsed > 0 then
+            ResumeTrack()
         else
-            if state.elapsed > 0 then
-                ResumeTrack()
-            else
-                PlayTrack(state.current)
-            end
+            PlayTrack(state.current)
         end
     end)
+    MakeBtn(">>", 34, 80,  NextTrack)
+    MakeBtn(">|", 34, 122, NextTrack)
 
-    -- [>>]  next track
-    MakeBtn(">>", 36, 76, function() NextTrack() end)
-
-    -- [>|]  next track (skip-to-end style)
-    MakeBtn(">|", 36, 120, function() NextTrack() end)
-
-    -- ── VOLUME CONTROL ──────────────────────────────────────
-    local volY = -192
-
-    local volLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    volLabel:SetPoint("TOP", f, "TOP", -60, volY)
-    volLabel:SetTextColor(0.9, 0.9, 0.9)
-    volLabel:SetText("Volume:")
+    -- Volume
+    local volY = -188
+    local volLbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    volLbl:SetPoint("TOP", f, "TOP", -58, volY)
+    volLbl:SetTextColor(0.9, 0.9, 0.9)
+    volLbl:SetText("Volume:")
 
     local volMinus = CreateFrame("Button", nil, f, "GameMenuButtonTemplate")
-    volMinus:SetWidth(28)
-    volMinus:SetHeight(22)
-    volMinus:SetPoint("TOP", f, "TOP", -10, volY)
+    volMinus:SetSize(26, 22)
+    volMinus:SetPoint("TOP", f, "TOP", -8, volY)
     volMinus:SetText("-")
     volMinus:SetScript("OnClick", function() SetVolume(GetVolume() - 0.1) end)
 
     local volPlus = CreateFrame("Button", nil, f, "GameMenuButtonTemplate")
-    volPlus:SetWidth(28)
-    volPlus:SetHeight(22)
-    volPlus:SetPoint("TOP", f, "TOP", 22, volY)
+    volPlus:SetSize(26, 22)
+    volPlus:SetPoint("TOP", f, "TOP", 20, volY)
     volPlus:SetText("+")
     volPlus:SetScript("OnClick", function() SetVolume(GetVolume() + 0.1) end)
 
     volumeText = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    volumeText:SetPoint("TOP", f, "TOP", 60, volY)
+    volumeText:SetPoint("TOP", f, "TOP", 58, volY)
     volumeText:SetTextColor(1, 1, 0)
     volumeText:SetText(math.floor(GetVolume() * 100 + 0.5) .. "%")
 
-    -- ── PLAYLIST (scrollable) ────────────────────────────────
-    local scrollFrame = CreateFrame("ScrollFrame", "MusicPlayerScrollFrame", f, "UIPanelScrollFrameTemplate")
-    scrollFrame:SetPoint("TOPLEFT",     f, "TOPLEFT",  14, -222)
-    scrollFrame:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -30, 10)
+    -- Rescan button
+    local rescanBtn = CreateFrame("Button", nil, f, "GameMenuButtonTemplate")
+    rescanBtn:SetSize(70, 22)
+    rescanBtn:SetPoint("TOP", f, "TOP", 132, volY)
+    rescanBtn:SetText("Rescan")
+    rescanBtn:SetScript("OnClick", function()
+        rescanBtn:SetText("...")
+        local msg = AIO.Msg():Add("MusicPlayer", "Rescan")
+        msg:Send()
+        C_Timer_After(1, function() rescanBtn:SetText("Rescan") end)
+    end)
 
-    local content = CreateFrame("Frame", "MusicPlayerScrollContent", scrollFrame)
-    content:SetWidth(scrollFrame:GetWidth())
-    local rowH = 22
-    content:SetHeight(rowH * #TRACKS)
-    scrollFrame:SetScrollChild(content)
+    -- Playlist scroll
+    playlistScroll = CreateFrame("ScrollFrame", "MPScrollFrame", f, "UIPanelScrollFrameTemplate")
+    playlistScroll:SetPoint("TOPLEFT",     f, "TOPLEFT",   14, -218)
+    playlistScroll:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -30, 10)
 
-    for i, track in ipairs(TRACKS) do
-        local btn = CreateFrame("Button", nil, content)
-        btn:SetHeight(rowH)
-        btn:SetPoint("TOPLEFT",  content, "TOPLEFT",  0, -(i - 1) * rowH)
-        btn:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -(i - 1) * rowH)
+    playlistContent = CreateFrame("Frame", "MPScrollContent", playlistScroll)
+    playlistContent:SetWidth(playlistScroll:GetWidth())
+    playlistContent:SetHeight(1)
+    playlistScroll:SetScrollChild(playlistContent)
 
-        -- Hover highlight texture
-        local hlTex = btn:CreateTexture(nil, "BACKGROUND")
-        hlTex:SetAllPoints(btn)
-        hlTex:SetTexture(1, 1, 1, 0)
-        btn:SetHighlightTexture(hlTex)
-
-        -- Label
-        local label = btn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        label:SetPoint("LEFT", btn, "LEFT", 6, 0)
-        label:SetPoint("RIGHT", btn, "RIGHT", -6, 0)
-        label:SetJustifyH("LEFT")
-        label:SetText(i .. ". " .. track.name .. " -- " .. track.artist)
-
-        -- Store ref so highlight can update it
-        btn.GetFontString = function() return label end
-
-        btn:SetScript("OnClick", function() PlayTrack(i) end)
-        btn:SetScript("OnEnter", function()
-            if i ~= state.current then label:SetTextColor(1, 1, 1) end
-        end)
-        btn:SetScript("OnLeave", function()
-            if i == state.current then
-                label:SetTextColor(1, 1, 0)
-            else
-                label:SetTextColor(0.8, 0.8, 0.8)
-            end
-        end)
-
-        playlistButtons[i] = btn
-    end
-
-    -- Apply initial colors
-    UpdatePlaylistHighlight()
-
-    -- ── ONUPDATE TICKER ─────────────────────────────────────
-    -- Uses a separate invisible frame to avoid touching the main frame's script.
+    -- OnUpdate ticker (invisible frame)
     local ticker = CreateFrame("Frame")
     ticker:SetScript("OnUpdate", function()
         if not state.playing then return end
-
-        local track    = TRACKS[state.current]
+        local track = TRACKS[state.current]
+        if not track then return end
         local elapsed  = GetElapsed()
-        local duration = track.duration
+        local duration = track.duration or 0
 
-        -- Auto-advance to next track
-        if elapsed >= duration then
+        -- Auto-advance
+        if duration > 0 and elapsed >= duration then
             NextTrack()
             return
         end
 
-        -- Progress bar fill: scale width to [0, barContainer width]
-        local barW = barContainer:GetWidth()
-        if barW and barW > 0 then
-            local fillW = math.max(1, math.floor(barW * (elapsed / duration)))
-            progressBarFill:SetWidth(fillW)
-        end
-
-        -- Time text
-        if timeText then
-            timeText:SetText(FormatTime(elapsed) .. " / " .. FormatTime(duration))
-        end
-
-        -- Play/pause button label sync
-        if playPauseBtn then
-            playPauseBtn:SetText("|| Pause")
+        -- Progress bar
+        if duration > 0 then
+            local barW = barContainer:GetWidth()
+            if barW and barW > 0 then
+                progressBarFill:SetWidth(math.max(1, math.floor(barW * (elapsed / duration))))
+            end
+            if timeText then
+                timeText:SetText(FormatTime(elapsed) .. " / " .. FormatTime(duration))
+            end
+        else
+            if timeText then
+                timeText:SetText(FormatTime(elapsed) .. " / --:--")
+            end
         end
     end)
+
+    -- Build playlist with whatever tracks we have at this point
+    RebuildPlaylist()
 
     f:Show()
 end
 
 -- ─────────────────────────────────────────────────────────────
--- PUBLIC OPEN FUNCTION
+-- OPEN FRAME
 -- ─────────────────────────────────────────────────────────────
 local function OpenFrame()
     BuildFrame()
-    if MusicPlayerFrame then MusicPlayerFrame:Show() end
+    MusicPlayerFrame:Show()
+    MusicPlayerFrame:Raise()
 end
 
 -- ─────────────────────────────────────────────────────────────
--- AIO CLIENT-SIDE HANDLER TABLE
+-- AIO HANDLERS
 -- ─────────────────────────────────────────────────────────────
 local MusicPlayerClient = AIO.AddHandlers("MusicPlayer", {})
+
+-- Server sends the full track list (on login and after rescan)
+function MusicPlayerClient.SetTracks(handler, player, trackList)
+    TRACKS = trackList or {}
+    -- Reset playback if current track is now out of range
+    if state.current > #TRACKS then
+        state.current = 1
+        PauseTrack()
+        if trackNameText then
+            trackNameText:SetText(#TRACKS > 0 and TRACKS[1].name or "No track loaded")
+            trackArtistText:SetText(#TRACKS > 0 and TRACKS[1].artist or "—")
+        end
+    end
+    RebuildPlaylist()
+    if #TRACKS > 0 then
+        print(string.format("[MusicPlayer] %d track(s) loaded.", #TRACKS))
+    else
+        print("[MusicPlayer] No tracks found. Drop MP3/OGG in Interface/AddOns/MusicPlayer/music/")
+    end
+end
 
 function MusicPlayerClient.ShowUI(handler, player)
     OpenFrame()
@@ -424,13 +447,11 @@ end
 -- ─────────────────────────────────────────────────────────────
 -- MINIMAP BUTTON
 -- ─────────────────────────────────────────────────────────────
-local minimapAngle = 220  -- degrees; drag to reposition
+local minimapAngle = 220
 
 local function UpdateMinimapPos(btn)
     local rad = math.rad(minimapAngle)
-    btn:SetPoint("CENTER", Minimap, "CENTER",
-        80 * math.cos(rad),
-        80 * math.sin(rad))
+    btn:SetPoint("CENTER", Minimap, "CENTER", 80 * math.cos(rad), 80 * math.sin(rad))
 end
 
 local minimapBtn = CreateFrame("Button", "MusicPlayerMinimapBtn", Minimap)
@@ -438,24 +459,20 @@ minimapBtn:SetSize(31, 31)
 minimapBtn:SetFrameStrata("MEDIUM")
 minimapBtn:SetFrameLevel(8)
 
--- Small icon (17px) so it fits inside the circular border — same as native WoW minimap buttons
 local icon = minimapBtn:CreateTexture(nil, "BACKGROUND")
 icon:SetSize(17, 17)
 icon:SetTexture("Interface/Icons/INV_Misc_Note_01")
 icon:SetPoint("CENTER", minimapBtn, "CENTER", 0, 0)
 
--- Circular golden border (54px) on top — this is what makes it look round
 local border = minimapBtn:CreateTexture(nil, "OVERLAY")
 border:SetSize(54, 54)
 border:SetTexture("Interface/Minimap/MiniMap-TrackingBorder")
 border:SetPoint("CENTER", minimapBtn, "CENTER", 0, 0)
 
--- Subtle glow on hover
 minimapBtn:SetHighlightTexture("Interface/Minimap/UI-Minimap-ZoomButton-Highlight")
 
 UpdateMinimapPos(minimapBtn)
 
--- Drag around the minimap border
 minimapBtn:RegisterForDrag("LeftButton")
 minimapBtn:SetScript("OnDragStart", function(self)
     self:SetScript("OnUpdate", function()
@@ -469,8 +486,6 @@ end)
 minimapBtn:SetScript("OnDragStop", function(self)
     self:SetScript("OnUpdate", nil)
 end)
-
--- Click: toggle player frame
 minimapBtn:SetScript("OnClick", function()
     if MusicPlayerFrame and MusicPlayerFrame:IsShown() then
         MusicPlayerFrame:Hide()
@@ -478,24 +493,18 @@ minimapBtn:SetScript("OnClick", function()
         OpenFrame()
     end
 end)
-
--- Tooltip
 minimapBtn:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
     GameTooltip:AddLine("Music Player")
-    GameTooltip:AddLine("Click to toggle", 0.7, 0.7, 0.7)
-    GameTooltip:AddLine("Drag to reposition", 0.5, 0.5, 0.5)
+    GameTooltip:AddLine(#TRACKS .. " track(s) loaded", 0.7, 0.7, 0.7)
+    GameTooltip:AddLine("Click to toggle  |  Drag to move", 0.5, 0.5, 0.5)
     GameTooltip:Show()
 end)
-minimapBtn:SetScript("OnLeave", function()
-    GameTooltip:Hide()
-end)
+minimapBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 -- ─────────────────────────────────────────────────────────────
 -- SLASH COMMANDS
 -- ─────────────────────────────────────────────────────────────
 SLASH_MUSICPLAYER1 = "/musicplayer"
 SLASH_MUSICPLAYER2 = "/mp"
-SlashCmdList["MUSICPLAYER"] = function(msg)
-    OpenFrame()
-end
+SlashCmdList["MUSICPLAYER"] = function() OpenFrame() end
