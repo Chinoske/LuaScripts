@@ -8,7 +8,7 @@ local AIO = AIO or require("AIO")
 if not AIO.IsMainState() then return end
 
 -- Register the client addon file so AIO sends it to every player on login.
-AIO.AddAddon("lua_scripts/MusicPlayer/MusicPlayer_client.lua", "MusicPlayer")
+AIO.AddAddon("lua_scripts/MusicPlayer_client.lua", "MusicPlayer")
 
 -- Handler table (server-side handlers that the client can call).
 -- Currently the player manages everything locally; the table is kept
