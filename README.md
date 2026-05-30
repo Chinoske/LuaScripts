@@ -12,6 +12,7 @@ Scripts Lua para **AzerothCore WotLK 3.3.5a** con **[mod-ale](https://github.com
 | 📈 | [LevelStats](./LevelStats/) | Bonus de estadística aleatoria al subir de nivel |
 | ☠️ | [Scarlet Enclave DK](./Scarlet_Enclave_DK/) | Zona de inicio completa del Caballero de la Muerte |
 | ⚡ | [SpellCharges](./SpellCharges/) | Sistema de cargas para hechizos con UI en tiempo real (requiere AIO) |
+| 🔌 | [AIO HelloTest](./AIO_HelloTest/) | Script de prueba para verificar la instalación de AIO |
 
 ---
 
