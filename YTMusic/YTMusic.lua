@@ -18,7 +18,7 @@ if not AIO.IsMainState() then
 end
 
 -- Register the client file so AIO sends it to players on login.
-AIO.AddAddon("lua_scripts/YTMusic/YTMusic_client.lua", "YTMusic")
+AIO.AddAddon("lua_scripts/YTMusic_client.lua", "YTMusic")
 
 -- Server-side handler table. Currently empty — the server only
 -- pushes the UI; no messages are expected back from the client.
