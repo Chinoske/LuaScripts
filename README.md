@@ -9,6 +9,7 @@ Scripts Lua para **AzerothCore WotLK 3.3.5a** con **[mod-ale](https://github.com
 | Icono | Script | Descripción |
 |:-----:|--------|-------------|
 | 🗺️ | [Portal Master](./Portal_Master/) | NPC teleportador con más de 130 destinos |
+| 📈 | [LevelStats](./LevelStats/) | Bonus de estadística aleatoria al subir de nivel |
 
 ---
 
