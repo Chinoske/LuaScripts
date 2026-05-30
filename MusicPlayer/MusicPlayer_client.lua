@@ -442,19 +442,19 @@ minimapBtn:SetFrameLevel(8)
 local border = minimapBtn:CreateTexture(nil, "OVERLAY")
 border:SetTexture("Interface/Minimap/MiniMap-TrackingBorder")
 border:SetSize(54, 54)
-border:SetPoint("TOPLEFT", minimapBtn, "TOPLEFT", -11, 11)
+border:SetPoint("CENTER", minimapBtn, "CENTER", 0, 0)
 
 -- Music note icon
 local icon = minimapBtn:CreateTexture(nil, "BACKGROUND")
 icon:SetTexture("Interface/Icons/INV_Misc_Note_01")
-icon:SetSize(20, 20)
-icon:SetPoint("CENTER")
+icon:SetSize(22, 22)
+icon:SetPoint("CENTER", minimapBtn, "CENTER", 0, 0)
 
 -- Highlight on hover
 local highlight = minimapBtn:CreateTexture(nil, "HIGHLIGHT")
 highlight:SetTexture("Interface/Minimap/UI-Minimap-ZoomButton-Highlight")
 highlight:SetSize(32, 32)
-highlight:SetPoint("CENTER")
+highlight:SetPoint("CENTER", minimapBtn, "CENTER", 0, 0)
 
 UpdateMinimapPos(minimapBtn)
 
