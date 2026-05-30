@@ -192,7 +192,7 @@ local function CreateYTMusicFrame()
     -- -----------------------------------------------------------------------
     local footer = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     footer:SetPoint("BOTTOM", f, "BOTTOM", 0, 10)
-    footer:SetText("Type .ytmusic to open this window")
+    footer:SetText("Type /ytmusic to open this window")
     footer:SetTextColor(0.5, 0.5, 0.5, 1)
 
     -- Hide by default; ShowUI will call f:Show().
@@ -202,13 +202,28 @@ local function CreateYTMusicFrame()
 end
 
 -- ---------------------------------------------------------------------------
--- Handler called by the server when the player types .ytmusic
--- Signature: function(handler, player, ...)
+-- Local helper: opens the frame (used by both slash command and AIO handler)
 -- ---------------------------------------------------------------------------
-function YTMusicClient.ShowUI(handler, player)
+local function OpenFrame()
     if not mainFrame then
         mainFrame = CreateYTMusicFrame()
     end
     mainFrame:Show()
     mainFrame:Raise()
+end
+
+-- ---------------------------------------------------------------------------
+-- /ytmusic slash command — runs entirely client-side, no server round-trip
+-- ---------------------------------------------------------------------------
+SLASH_YTMUSIC1 = "/ytmusic"
+SlashCmdList["YTMUSIC"] = function()
+    OpenFrame()
+end
+
+-- ---------------------------------------------------------------------------
+-- AIO handler — called by the server if needed
+-- Signature: function(handler, player, ...)
+-- ---------------------------------------------------------------------------
+function YTMusicClient.ShowUI(handler, player)
+    OpenFrame()
 end
