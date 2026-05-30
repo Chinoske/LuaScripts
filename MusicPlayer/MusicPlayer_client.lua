@@ -434,27 +434,24 @@ local function UpdateMinimapPos(btn)
 end
 
 local minimapBtn = CreateFrame("Button", "MusicPlayerMinimapBtn", Minimap)
-minimapBtn:SetSize(32, 32)
+minimapBtn:SetSize(31, 31)
 minimapBtn:SetFrameStrata("MEDIUM")
 minimapBtn:SetFrameLevel(8)
 
--- Circular gold border (standard minimap button look)
+-- Icon shown normally (no black background — SetNormalTexture is transparent by default)
+minimapBtn:SetNormalTexture("Interface/Icons/INV_Misc_Note_01")
+
+-- Glow when hovered
+minimapBtn:SetHighlightTexture("Interface/Minimap/UI-Minimap-ZoomButton-Highlight")
+
+-- Slightly dimmer when clicked
+minimapBtn:SetPushedTexture("Interface/Minimap/UI-Minimap-ZoomButton-Highlight")
+
+-- Circular gold border on top of everything
 local border = minimapBtn:CreateTexture(nil, "OVERLAY")
 border:SetTexture("Interface/Minimap/MiniMap-TrackingBorder")
 border:SetSize(54, 54)
 border:SetPoint("CENTER", minimapBtn, "CENTER", 0, 0)
-
--- Music note icon
-local icon = minimapBtn:CreateTexture(nil, "BACKGROUND")
-icon:SetTexture("Interface/Icons/INV_Misc_Note_01")
-icon:SetSize(22, 22)
-icon:SetPoint("CENTER", minimapBtn, "CENTER", 0, 0)
-
--- Highlight on hover
-local highlight = minimapBtn:CreateTexture(nil, "HIGHLIGHT")
-highlight:SetTexture("Interface/Minimap/UI-Minimap-ZoomButton-Highlight")
-highlight:SetSize(32, 32)
-highlight:SetPoint("CENTER", minimapBtn, "CENTER", 0, 0)
 
 UpdateMinimapPos(minimapBtn)
 
