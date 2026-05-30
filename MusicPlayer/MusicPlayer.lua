@@ -13,7 +13,7 @@ AIO.AddAddon("lua_scripts/MusicPlayer_client.lua", "MusicPlayer")
 -- MUSIC_FOLDER  : full path on THIS machine where you drop MP3/OGG files
 -- WOW_MUSIC_PATH: path the WoW CLIENT uses to play those same files
 -- ============================================================================
-local MUSIC_FOLDER   = "C:/Users/guill/WoW/Interface/AddOns/MusicPlayer/music"
+local MUSIC_FOLDER   = "C:/Wow/Interface/AddOns/MusicPlayer/music"
 local WOW_MUSIC_PATH = "Interface/AddOns/MusicPlayer/music"
 -- ============================================================================
 
