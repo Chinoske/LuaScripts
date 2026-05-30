@@ -97,8 +97,19 @@ local function PlayTrack(index)
     state.playing   = true
     state.startTime = GetTime()
     state.elapsed   = 0
+
+    -- Make sure music is enabled and audible
+    SetCVar("Sound_EnableMusic", "1")
+    if (tonumber(GetCVar("Sound_MusicVolume")) or 0) < 0.1 then
+        SetCVar("Sound_MusicVolume", "0.7")
+        if volumeText then volumeText:SetText("70%") end
+    end
+
+    local file = TRACKS[index].file
+    print("[MusicPlayer] Playing: " .. file)
     StopMusic()
-    PlayMusic(TRACKS[index].file)
+    PlayMusic(file)
+
     UpdateNowPlaying()
     if playPauseBtn then playPauseBtn:SetText("|| Pause") end
 end
