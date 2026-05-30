@@ -24,17 +24,15 @@ AIO.AddAddon("lua_scripts/YTMusic_client.lua", "YTMusic")
 -- pushes the UI; no messages are expected back from the client.
 local YTMusicHandlers = AIO.AddHandlers("YTMusic", {})
 
--- Listen for the .ytmusic player command (ON_COMMAND, event 42).
--- Returning false consumes the command so the server does not echo an error.
-local function OnCommand(event, player, command)
-    if command == "ytmusic" then
+-- Listen for the .ytmusic chat message (ON_CHAT, event 18).
+-- Returning false suppresses the message so it does not appear in chat.
+local function OnChat(event, player, msg, type, lang)
+    if msg == ".ytmusic" then
         AIO.Handle(player, "YTMusic", "ShowUI")
         return false
     end
-    -- Return true to let other commands pass through normally.
-    return true
 end
 
-RegisterPlayerEvent(42, OnCommand)
+RegisterPlayerEvent(18, OnChat)
 
 print("[YTMusic] Loaded.")
