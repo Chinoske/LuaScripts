@@ -20,18 +20,20 @@ Solo disponible para personajes clase DK que aún no hayan completado la cadena 
 
 | Archivo | Descripción |
 |---------|-------------|
-| `npc_misiones_dk.lua` | Script del NPC (gossip + lógica) |
-| `npc_misiones_dk.sql` | Template del NPC entry 200000 + spawn en Acherus |
+| `npc_misiones_dk.lua` | Script del NPC (gossip + lógica + auto-registro en DB) |
 
 ---
 
 ## Instalación
 
-```bash
-mysql -u acore -p acore_world < npc_misiones_dk.sql
-```
 ```
 npc_misiones_dk.lua  →  <server>/lua_scripts/
+```
+
+Al cargar el script, registra automáticamente el NPC en la base de datos si no existe.
+Si es la primera vez que se instala, reiniciar el servidor una vez para que el cache se actualice.
+
+```
 .reload ale
 ```
 

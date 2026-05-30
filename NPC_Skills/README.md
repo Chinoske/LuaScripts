@@ -18,18 +18,20 @@ Arcos · Ballestas · Armas arrojadizas · Dagas · Arma de asta · Mazas · Maz
 
 | Archivo | Descripción |
 |---------|-------------|
-| `npc_skills.lua` | Script del NPC (gossip + lógica) |
-| `npc_skills.sql` | Template del NPC entry 200005 + spawn en Rasganorte |
+| `npc_skills.lua` | Script del NPC (gossip + lógica + auto-registro en DB) |
 
 ---
 
 ## Instalación
 
-```bash
-mysql -u acore -p acore_world < npc_skills.sql
-```
 ```
 npc_skills.lua  →  <server>/lua_scripts/
+```
+
+Al cargar el script, registra automáticamente el NPC en la base de datos si no existe.
+Si es la primera vez que se instala, reiniciar el servidor una vez para que el cache se actualice.
+
+```
 .reload ale
 ```
 

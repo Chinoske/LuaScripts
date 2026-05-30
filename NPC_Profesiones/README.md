@@ -18,18 +18,20 @@ Alquimia · Desuello · Encantamiento · Herrería · Ingeniería · Inscripció
 
 | Archivo | Descripción |
 |---------|-------------|
-| `npc_professions.lua` | Script del NPC (gossip + lógica) |
-| `npc_professions.sql` | Template del NPC entry 200004 + spawn en Rasganorte |
+| `npc_professions.lua` | Script del NPC (gossip + lógica + auto-registro en DB) |
 
 ---
 
 ## Instalación
 
-```bash
-mysql -u acore -p acore_world < npc_professions.sql
-```
 ```
 npc_professions.lua  →  <server>/lua_scripts/
+```
+
+Al cargar el script, registra automáticamente el NPC en la base de datos si no existe.
+Si es la primera vez que se instala, reiniciar el servidor una vez para que el cache se actualice.
+
+```
 .reload ale
 ```
 

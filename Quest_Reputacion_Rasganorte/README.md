@@ -25,18 +25,20 @@ Requiere nivel 80. Disponible para Alianza y Horda con opciones según facción.
 
 | Archivo | Descripción |
 |---------|-------------|
-| `npc_misiones_rasganorte.lua` | Script del NPC (gossip + lógica) |
-| `npc_misiones_rasganorte.sql` | Template del NPC entry 200003 + spawn en Rasganorte |
+| `npc_misiones_rasganorte.lua` | Script del NPC (gossip + lógica + auto-registro en DB) |
 
 ---
 
 ## Instalación
 
-```bash
-mysql -u acore -p acore_world < npc_misiones_rasganorte.sql
-```
 ```
 npc_misiones_rasganorte.lua  →  <server>/lua_scripts/
+```
+
+Al cargar el script, registra automáticamente el NPC en la base de datos si no existe.
+Si es la primera vez que se instala, reiniciar el servidor una vez para que el cache se actualice.
+
+```
 .reload ale
 ```
 
