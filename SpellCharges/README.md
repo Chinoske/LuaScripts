@@ -1,5 +1,7 @@
 # SpellCharges
 
+> **Autor original:** [Crow (crow0385)](https://github.com/crow0385)
+
 Sistema de cargas para hechizos en **AzerothCore WotLK 3.3.5a** con **mod-ale** + **AIO v1.75**.
 
 Permite asignar un número máximo de cargas a cualquier hechizo del juego. Las cargas se recargan automáticamente con un cooldown configurable y se muestran en la action bar del cliente en tiempo real.

@@ -1,4 +1,5 @@
 -- AzerothCore ALE + AIO spell charges (server side).
+-- Original author: Crow (crow0385) https://github.com/crow0385
 -- Requirements:
 --   * mod-ale (AzerothCore Lua Engine) installed and active.
 --   * AIO v1.75 server library installed at: lua_scripts/AIO_Server/AIO.lua
