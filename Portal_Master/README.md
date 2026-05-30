@@ -28,31 +28,22 @@ All gossip logic, faction conditions, level requirements and teleports are handl
 
 | File | Description |
 |------|-------------|
-| `Portal_Master.lua` | Main script — gossip, teleport logic, all destinations |
-| `Portal_Master_npc.sql` | NPC template + 12 world spawns (entry 190000) |
+| `Portal_Master.lua` | Main script — gossip, teleport logic, all destinations + auto-registro en DB |
 
 ---
 
 ## Installation
 
-### 1. Apply the SQL
-```bash
-mysql -u acore -p acore_world < Portal_Master_npc.sql
-```
-
-### 2. Copy the Lua script
 ```
 Portal_Master.lua  →  <server>/lua_scripts/
 ```
 
-### 3. Reload in-game (worldserver console)
+Al cargar el script, registra automáticamente el NPC y sus 12 spawns en la base de datos si no existen.  
+Si es la primera vez que se instala, reiniciar el servidor una vez para que el cache se actualice.
+
 ```
-.reload creature_template
 .reload ale
 ```
-
-> ⚠️ **Order matters** — SQL must be applied before `.reload ale`.  
-> `RegisterCreatureGossipEvent` validates the NPC entry exists in `creature_template` at load time.
 
 ---
 

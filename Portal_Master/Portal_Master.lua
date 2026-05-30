@@ -406,6 +406,36 @@ DESTS[MENU_NORTHREND] = {
 }
 
 -- =============================================================================
+-- AUTO-REGISTRO EN DB (solo inserta si no existe)
+-- Si se inserta por primera vez, reiniciar el servidor para activarlo.
+-- =============================================================================
+local function InitNPC()
+    local e = NPC_ENTRY
+    if not WorldDBQuery("SELECT 1 FROM creature_template WHERE entry=" .. e .. " LIMIT 1") then
+        WorldDBExecute("INSERT INTO `creature_template` (`entry`,`name`,`subname`,`minlevel`,`maxlevel`,`faction`,`npcflag`,`speed_walk`,`speed_run`,`unit_class`,`rank`,`family`,`type`,`RegenHealth`,`flags_extra`,`BaseAttackTime`,`RangeAttackTime`,`unit_flags`,`dynamicflags`,`ScriptName`) VALUES (" .. e .. ",'Portal Master','Teleporter',71,71,35,1,1.0,1.14286,1,1,0,7,1,2,2000,2000,0,0,'')")
+        WorldDBExecute("INSERT INTO `creature_template_model` (`CreatureID`,`Idx`,`CreatureDisplayID`,`DisplayScale`,`Probability`) VALUES (" .. e .. ",0,21572,1.0,1)")
+        print("[Portal Master] creature_template " .. e .. " insertado — reinicia el servidor para activarlo")
+    end
+    if not WorldDBQuery("SELECT 1 FROM creature WHERE id1=" .. e .. " LIMIT 1") then
+        WorldDBExecute("INSERT INTO `creature` (`guid`,`id1`,`id2`,`id3`,`map`,`zoneId`,`areaId`,`spawnMask`,`phaseMask`,`equipment_id`,`position_x`,`position_y`,`position_z`,`orientation`,`spawntimesecs`,`wander_distance`,`currentwaypoint`,`curhealth`,`curmana`,`MovementType`,`npcflag`,`unit_flags`,`dynamicflags`) VALUES " ..
+            "(5001001," .. e .. ",0,0,0,0,0,1,1,0,-8845.09,624.828,94.2999,0.44062,300,0,0,1,0,0,0,0,0)," ..
+            "(5001002," .. e .. ",0,0,0,0,0,1,1,0,-4898.37,-965.118,501.447,2.25986,300,0,0,1,0,0,0,0,0)," ..
+            "(5001003," .. e .. ",0,0,0,0,0,1,1,0,1637.21,240.132,-43.1034,3.13147,300,0,0,1,0,0,0,0,0)," ..
+            "(5001004," .. e .. ",0,0,0,0,0,1,1,0,-14279.8,555.014,8.90011,3.97606,300,0,0,1,0,0,0,0,0)," ..
+            "(5001005," .. e .. ",0,0,1,0,0,1,1,0,1599.25,-4375.85,10.0872,5.23641,300,0,0,1,0,0,0,0,0)," ..
+            "(5001006," .. e .. ",0,0,1,0,0,1,1,0,-1277.65,72.9751,128.742,5.95567,300,0,0,1,0,0,0,0,0)," ..
+            "(5001007," .. e .. ",0,0,1,0,0,1,1,0,9866.83,2494.66,1315.88,5.94620,300,0,0,1,0,0,0,0,0)," ..
+            "(5001008," .. e .. ",0,0,530,0,0,1,1,0,-3862.69,-11645.8,-137.629,2.38273,300,0,0,1,0,0,0,0,0)," ..
+            "(5001009," .. e .. ",0,0,530,0,0,1,1,0,9741.67,-7454.19,13.5572,3.14231,300,0,0,1,0,0,0,0,0)," ..
+            "(5001010," .. e .. ",0,0,530,0,0,1,1,0,-1888.65,5355.88,-12.4279,1.25883,300,0,0,1,0,0,0,0,0)," ..
+            "(5001011," .. e .. ",0,0,571,0,0,1,1,0,5807.06,506.244,657.576,5.54461,300,0,0,1,0,0,0,0,0)," ..
+            "(5001012," .. e .. ",0,0,0,0,0,1,1,0,-13180.5,342.503,43.1936,4.32977,300,0,0,1,0,0,0,0,0)")
+        print("[Portal Master] 12 spawns insertados en creature")
+    end
+end
+InitNPC()
+
+-- =============================================================================
 -- HELPERS
 -- =============================================================================
 

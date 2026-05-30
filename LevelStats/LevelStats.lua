@@ -61,6 +61,22 @@ local Config = {
     }
 }
 
+-- Auto-crea la tabla en acore_characters si no existe (solo inserta si falta)
+local function EnsureTable()
+    CharDBExecute([[
+        CREATE TABLE IF NOT EXISTS `custom_level_stats` (
+            `guid` INT UNSIGNED NOT NULL,
+            `str`  INT UNSIGNED NOT NULL DEFAULT 0,
+            `agi`  INT UNSIGNED NOT NULL DEFAULT 0,
+            `sta`  INT UNSIGNED NOT NULL DEFAULT 0,
+            `int`  INT UNSIGNED NOT NULL DEFAULT 0,
+            `spi`  INT UNSIGNED NOT NULL DEFAULT 0,
+            PRIMARY KEY (`guid`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ]])
+end
+EnsureTable()
+
 -- Named hook IDs for readability
 local PLAYER_EVENT_ON_LOGIN        = 3
 local PLAYER_EVENT_ON_LEVEL_CHANGE = 13
