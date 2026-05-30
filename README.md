@@ -1,23 +1,23 @@
 # 🌙 LuaScripts — AzerothCore + mod-ale
 
-Scripts Lua para **AzerothCore WotLK 3.3.5a** con **[mod-ale](https://github.com/azerothcore/mod-ale)**.
+Lua scripts for **AzerothCore WotLK 3.3.5a** with **[mod-ale](https://github.com/azerothcore/mod-ale)**.
 
 ---
 
 ## 📋 Scripts
 
-| Icono | Script | Descripción |
-|:-----:|--------|-------------|
-| 🗺️ | [Portal Master](./Portal_Master/) | NPC teleportador con más de 130 destinos |
-| 📈 | [LevelStats](./LevelStats/) | Bonus de estadística aleatoria al subir de nivel |
-| ☠️ | [Scarlet Enclave DK](./Scarlet_Enclave_DK/) | Zona de inicio completa del Caballero de la Muerte |
-| ⚡ | [SpellCharges](./SpellCharges/) | Sistema de cargas para hechizos con UI en tiempo real (requiere AIO) |
-| 🔌 | [AIO HelloTest](./AIO_HelloTest/) | Script de prueba para verificar la instalación de AIO |
-| 🧪 | [NPC Profesiones](./NPC_Profesiones/) | NPC que sube todas las profesiones a 450 |
-| ⚔️ | [NPC Skills](./NPC_Skills/) | NPC que sube habilidades de armas a 400 |
-| 💀 | [Quest Complete DK](./Quest_Complete_DK/) | NPC que completa la cadena de misiones del DK |
-| 🏆 | [Quest Reputación Rasganorte](./Quest_Reputacion_Rasganorte/) | NPC que sube reputaciones de Rasganorte a Exaltado |
+| | Script | Description |
+|:---:|--------|-------------|
+| 🗺️ | [Portal Master](./Portal_Master/) | Teleporter NPC with 130+ destinations across all expansions |
+| 📈 | [LevelStats](./LevelStats/) | Random stat bonus on level up — supports bulk level jumps |
+| ☠️ | [Scarlet Enclave DK](./Scarlet_Enclave_DK/) | Full Death Knight starting zone reimplemented in Lua |
+| ⚡ | [SpellCharges](./SpellCharges/) | Spell charge system with real-time UI (requires AIO) |
+| 🔌 | [AIO HelloTest](./AIO_HelloTest/) | Test script to verify AIO installation with mod-ale |
+| 🧪 | [NPC Profesiones](./NPC_Profesiones/) | NPC that maxes all professions to 450 |
+| ⚔️ | [NPC Skills](./NPC_Skills/) | NPC that maxes weapon skills to 400 |
+| 💀 | [Quest Complete DK](./Quest_Complete_DK/) | NPC that completes the entire DK starting quest chain |
+| 🏆 | [Quest Reputacion Rasganorte](./Quest_Reputacion_Rasganorte/) | NPC that raises Northrend reputations to Exalted |
 
 ---
 
-> Requisitos: AzerothCore 3.3.5a + mod-ale · Recarga con `.reload ale`
+> **Requirements:** AzerothCore 3.3.5a + mod-ale · Reload with `.reload ale`

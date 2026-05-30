@@ -1,56 +1,53 @@
 # Quest Complete DK
 
-> **Autor original:** pangolp (Walter Pagani)
+> **Original author:** pangolp (Walter Pagani)
 
-NPC que completa automáticamente todas las misiones de la zona de inicio del **Caballero de la Muerte** para **AzerothCore WotLK 3.3.5a** con **mod-ale**.
+NPC that automatically completes all **Death Knight starting zone quests** for **AzerothCore WotLK 3.3.5a** with **mod-ale**.
 
-Solo disponible para personajes clase DK que aún no hayan completado la cadena de inicio. Al terminar, teleporta al jugador a su ciudad capital según facción y raza.
-
----
-
-## Funcionalidad
-
-- Completa las ~45 misiones de la zona de inicio de DK (Acherus / Enclave Escarlata)
-- Detecta la facción (Alianza/Horda) y la raza para completar la misión final correspondiente
-- Teleporta automáticamente a Ventormenta (Alianza) u Orgrimmar (Horda) al finalizar
+Only available to DK characters who have not yet completed the starting chain. After completion, teleports the player to their capital city based on faction and race.
 
 ---
 
-## Archivos
+## Features
 
-| Archivo | Descripción |
-|---------|-------------|
-| `npc_misiones_dk.lua` | Script del NPC (gossip + lógica + auto-registro en DB) |
+- Completes ~45 quests from the DK starting zone (Acherus / Scarlet Enclave)
+- Detects faction (Alliance/Horde) and race to complete the final quest accordingly
+- Automatically teleports to Stormwind (Alliance) or Orgrimmar (Horde)
 
 ---
 
-## Instalación
+## Files
+
+| File | Description |
+|------|-------------|
+| `npc_misiones_dk.lua` | NPC script (gossip + logic + auto DB registration) |
+
+---
+
+## Installation
 
 ```
 npc_misiones_dk.lua  →  <server>/lua_scripts/
-```
-
-Al cargar el script, registra automáticamente el NPC en la base de datos si no existe.
-Si es la primera vez que se instala, reiniciar el servidor una vez para que el cache se actualice.
-
-```
 .reload ale
 ```
+
+The script automatically registers the NPC in the database if it does not exist.  
+On a fresh install, restart the server once after the first load to update the creature cache.
 
 ---
 
 ## NPC
 
-| Campo | Valor |
+| Field | Value |
 |-------|-------|
 | Entry | 200000 |
-| Nombre | The Lich King |
-| Subtítulo | Completar misiones dk |
+| Name | The Lich King |
+| Subname | Completar misiones dk |
 | Spawn | Acherus (map 609) |
 
 ---
 
-## Requisitos
+## Requirements
 
 - AzerothCore WotLK **3.3.5a**
 - [mod-ale](https://github.com/azerothcore/mod-ale)

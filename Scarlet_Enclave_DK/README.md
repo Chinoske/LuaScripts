@@ -1,68 +1,63 @@
 # Scarlet Enclave — Death Knight Starting Zone
 
-Script Lua completo de la zona de inicio de los **Caballeros de la Muerte** para **AzerothCore WotLK 3.3.5a** con **[mod-ale](https://github.com/azerothcore/mod-ale)**.
+Full Lua reimplementation of the **Death Knight starting zone** for **AzerothCore WotLK 3.3.5a** with **[mod-ale](https://github.com/azerothcore/mod-ale)**.
 
-Reimplementa en Lua los scripts C++ originales de AzerothCore:
+Reimplements the original AzerothCore C++ scripts in Lua:  
 `zone_the_scarlet_enclave.cpp` · `chapter1.cpp` · `chapter2.cpp` · `chapter3.cpp` · `chapter5.cpp`
 
 ---
 
-## Contenido
+## Content
 
-### Capítulo 1 — Acherus: The Ebon Hold
-| NPC | Comportamiento |
-|-----|----------------|
-| **Val'kyr Battle-Maiden** | Revive al DK al morir — secuencia de vuelo multi-fase |
-| **Scarlet Ghoul** | Interacción con Gothik DKC1 |
-| **Gothik DKC1** | Ritual de levantamiento en Acherus |
-| **The Lich King** | 16 whispers aleatorios durante la zona |
+### Chapter 1 — Acherus: The Ebon Hold
+| NPC | Behavior |
+|-----|----------|
+| **Val'kyr Battle-Maiden** | Revives the DK on death — multi-phase aerial sequence |
+| **Scarlet Ghoul** | Interaction with Gothik DKC1 |
+| **Gothik DKC1** | Raising ritual in Acherus |
+| **The Lich King** | 16 random whispers throughout the zone |
 
-### Capítulo 2 — La Gran Ofensiva
-| NPC | Comportamiento |
-|-----|----------------|
-| **Koltira Deathweaver** | Secuencia completa de breakout con oleadas de Scarlet Crusaders + Valroth |
-| **Scarlet Courier** | Se oculta en el árbol y embosca al jugador |
-| **A Special Surprise** | 10 NPCs del pueblo natal reconocen y hablan al DK (Ellen Stanbridge, Kug Ironjaw, etc.) |
-| **Acherus Necromancer** | Ritual de levantamiento de cadáveres |
-| **Gothik the Harvester** | Ritual con animaciones de cosecha |
+### Chapter 2 — The Grand Offensive
+| NPC | Behavior |
+|-----|----------|
+| **Koltira Deathweaver** | Full breakout sequence with Scarlet Crusader waves + Valroth |
+| **Scarlet Courier** | Hides behind a tree and ambushes the player |
+| **A Special Surprise** | 10 hometown NPCs recognize and speak to the DK (Ellen Stanbridge, Kug Ironjaw, etc.) |
+| **Acherus Necromancer** | Corpse-raising ritual |
+| **Gothik the Harvester** | Harvesting ritual with animations |
 | **Persuasive Strike** | Quest *How to Win Friends and Influence Enemies* |
 
-### Capítulo 3 — An End to All Things
-| NPC | Comportamiento |
-|-----|----------------|
-| **Hearthglen / Tirisfal Crusader** | Devour Humanoid — el DK devora a los cruzados |
+### Chapter 3 — An End to All Things
+| NPC | Behavior |
+|-----|----------|
+| **Hearthglen / Tirisfal Crusader** | Devour Humanoid — DK devours the crusaders |
 
-### Capítulo 5 — The Light of Dawn
-| Evento | Descripción |
-|--------|-------------|
-| **Intro** | Highlord Darion Mograine convoca las fuerzas |
-| **Batalla** | Abominaciones, Ghouls y Warriors of the Frozen Wastes contra Defenders of the Light |
-| **Countdown** | Cuenta atrás completa con diálogos |
-| **Outro** | Tirion Fordring irrumpe, Alexandros Mograine aparece, Darion entrega el Ashbringer |
-| **Return to Capital** | Guards de Stormwind / Orgrimmar insultan al DK recién llegado |
+### Chapter 5 — The Light of Dawn
+| Event | Description |
+|-------|-------------|
+| **Intro** | Highlord Darion Mograine rallies the forces |
+| **Battle** | Abominations, Ghouls and Warriors of the Frozen Wastes vs Defenders of the Light |
+| **Countdown** | Full countdown with dialogue lines |
+| **Outro** | Tirion Fordring arrives, Alexandros Mograine appears, Darion surrenders the Ashbringer |
+| **Return to Capital** | Stormwind / Orgrimmar guards insult the arriving DK |
 
 ---
 
-## Instalación
+## Installation
 
-### 1. Copiar el script
 ```
 scarlet_enclave_dk.lua  →  <server>/lua_scripts/
-```
-
-### 2. Recargar
-```
 .reload ale
 ```
 
-> No requiere cambios en la base de datos.
+> No database changes required.
 
 ---
 
-## NPCs cubiertos
+## NPCs covered
 
-| Entry | Nombre |
-|-------|--------|
+| Entry | Name |
+|-------|------|
 | 24536 | Val'kyr Battle-Maiden |
 | 28658 | Gothik DKC1 |
 | 28845 | Scarlet Ghoul |
@@ -77,12 +72,12 @@ scarlet_enclave_dk.lua  →  <server>/lua_scripts/
 | 29173 | Highlord Darion Mograine |
 | 29174–29182 | Defenders of the Light + Champions |
 | 29175 | Highlord Tirion Fordring |
-| 29186–29219 | Fuerzas de Acherus (abominaciones, ghouls, warriors) |
+| 29186–29219 | Acherus forces (abominations, ghouls, warriors) |
 
 ---
 
-## Requisitos
+## Requirements
 
 - AzerothCore WotLK **3.3.5a**
 - [mod-ale](https://github.com/azerothcore/mod-ale)
-- La zona de inicio de DK debe estar habilitada en el servidor
+- The DK starting zone must be enabled on the server

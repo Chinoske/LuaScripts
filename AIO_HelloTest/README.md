@@ -1,40 +1,37 @@
 # AIO HelloTest
 
-Script de prueba para verificar que **AIO v1.75** funciona correctamente con **mod-ale** en AzerothCore WotLK 3.3.5a.
+Test script to verify that **AIO v1.75** works correctly with **mod-ale** on AzerothCore WotLK 3.3.5a.
 
 ---
 
-## ¿Para qué sirve?
+## Purpose
 
-Confirma que la comunicación servidor → cliente y cliente → servidor está operativa después de instalar AIO. Muestra una ventana en el cliente con un botón **Ping Server** que responde con el timestamp del servidor.
+Confirms that server → client and client → server communication is working after installing AIO. Opens a window on the client with a **Ping Server** button that replies with the server timestamp.
 
 ---
 
-## Requisitos
+## Requirements
 
 - AzerothCore WotLK **3.3.5a**
 - [mod-ale](https://github.com/azerothcore/mod-ale)
-- [AIO v1.75](https://github.com/Rochet2/AIO) — servidor en `lua_scripts/AIO_Server/`, cliente en `WoW/Interface/AddOns/AIO_Client/`
+- [AIO v1.75](https://github.com/Rochet2/AIO) — server at `lua_scripts/AIO_Server/`, client at `WoW/Interface/AddOns/AIO_Client/`
 
 ---
 
-## Instalación
+## Installation
 
 ```
 AIO_HelloTest.lua  →  <server>/lua_scripts/
-```
-
-```
 .reload ale
 ```
 
 ---
 
-## Uso
+## Usage
 
-En el chat del juego:
+Type in the in-game chat:
 ```
 .aiotest
 ```
 
-Aparecerá una ventana con el texto **"¡AIO funciona con mod-ale!"** y un botón **Ping Server**. Al hacer clic, el servidor responde con su timestamp — si aparece la respuesta, AIO está funcionando correctamente.
+A window will appear with the text **"¡AIO funciona con mod-ale!"** and a **Ping Server** button. Clicking it sends a ping to the server — if a response appears with the server timestamp, AIO is working correctly.

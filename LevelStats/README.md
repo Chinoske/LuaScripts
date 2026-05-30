@@ -1,80 +1,80 @@
 # LevelStats
 
-Bonus de estadísticas aleatorio al subir de nivel para **AzerothCore WotLK 3.3.5a** con **[mod-ale](https://github.com/azerothcore/mod-ale)**.
+Random stat bonus on level up for **AzerothCore WotLK 3.3.5a** with **[mod-ale](https://github.com/azerothcore/mod-ale)**.
 
-Adaptado para mod-ale a partir del original de [Brytenwally (Eluna)](https://github.com/Brytenwally/LevelStats).
-
----
-
-## ¿Cómo funciona?
-
-Cada vez que un jugador sube de nivel, el sistema elige **aleatoriamente** una de las 5 estadísticas principales y concede un bonus acumulativo:
-
-| Estadística | Spell (aura stackable) | Color |
-|-------------|------------------------|-------|
-| Strength    | Blessing of Might (7464) | 🔴 Rojo |
-| Agility     | Blessing of Agility (7471) | 🟢 Verde |
-| Stamina     | Blessing of Stamina (7477) | ⚪ Blanco |
-| Intellect   | Blessing of Wisdom (7468) | 🔵 Azul |
-| Spirit      | Blessing of Spirit (7474) | 🟡 Amarillo |
-
-- El bonus se guarda de forma acumulativa en la base de datos (`custom_level_stats`).
-- Al hacer login, todos los bonuses se reaplicán automáticamente como auras stackables.
-- Comando `.bonus` para ver los bonuses propios o los del jugador seleccionado.
-
-### Saltos masivos de nivel
-
-Si un jugador sube de nivel 1 a 80 de golpe (por comando GM o cualquier otro medio), el sistema aplica **un roll por cada nivel ganado** — no se pierde ninguno.
-
-- Subida normal (1 nivel): muestra el stat ganado en pantalla.
-- Salto masivo (varios niveles): muestra un resumen e invita a usar `.bonus`.
+Adapted for mod-ale from the original by [Brytenwally (Eluna)](https://github.com/Brytenwally/LevelStats).
 
 ---
 
-## Instalación
+## How it works
+
+Every time a player levels up, a random stat is chosen and a cumulative bonus is granted:
+
+| Stat | Spell (stackable aura) | Color |
+|------|------------------------|-------|
+| Strength  | Blessing of Might (7464)   | 🔴 Red    |
+| Agility   | Blessing of Agility (7471) | 🟢 Green  |
+| Stamina   | Blessing of Stamina (7477) | ⚪ White  |
+| Intellect | Blessing of Wisdom (7468)  | 🔵 Blue   |
+| Spirit    | Blessing of Spirit (7474)  | 🟡 Yellow |
+
+- Bonuses are stored cumulatively in the database (`custom_level_stats`).
+- On login, all bonuses are automatically reapplied as stackable auras.
+- Use `.bonus` to view your total bonuses or those of a selected player.
+
+### Bulk level jumps
+
+If a player jumps from level 1 to 80 all at once (GM command or any other method), the system applies **one roll per level gained** — none are lost.
+
+- Normal level-up (1 level): shows the stat gained on screen.
+- Bulk jump (multiple levels): shows a summary and suggests using `.bonus`.
+
+---
+
+## Installation
 
 ```
 LevelStats.lua  →  <server>/lua_scripts/
 .reload ale
 ```
 
-> La tabla `custom_level_stats` se crea automáticamente en `acore_characters` al cargar el script si no existe.
+> The `custom_level_stats` table is created automatically in `acore_characters` on first load.
 
 ---
 
-## Configuración
+## Configuration
 
-Edita el bloque `Config` al inicio de `LevelStats.lua`:
+Edit the `Config` block at the top of `LevelStats.lua`:
 
-| Variable | Descripción | Default |
+| Variable | Description | Default |
 |----------|-------------|---------|
-| `MinAmount` | Bonus mínimo por nivel | `1` |
-| `MaxAmount` | Bonus máximo por nivel | `5` |
-| `SyncDelayMs` | Delay tras subir de nivel antes de reaplicar auras (ms) | `500` |
-| `LoginDelayMs` | Delay tras login antes de reaplicar auras (ms) | `1200` |
-| `DebugEnabled` | Activa mensajes de debug en consola | `false` |
+| `MinAmount` | Minimum bonus per level | `1` |
+| `MaxAmount` | Maximum bonus per level | `5` |
+| `SyncDelayMs` | Delay after level-up before reapplying auras (ms) | `500` |
+| `LoginDelayMs` | Delay after login before reapplying auras (ms) | `1200` |
+| `DebugEnabled` | Enable debug messages in server console | `false` |
 
 ---
 
-## Comandos
+## Commands
 
-| Comando | Descripción |
+| Command | Description |
 |---------|-------------|
-| `.bonus` | Muestra tus bonuses acumulados |
-| `.bonus` (con jugador seleccionado) | Muestra los bonuses del jugador seleccionado |
+| `.bonus` | Show your accumulated bonuses |
+| `.bonus` (with player selected) | Show the selected player's bonuses |
 
 ---
 
-## Archivos
+## Files
 
-| Archivo | Descripción |
-|---------|-------------|
-| `LevelStats.lua` | Script principal (auto-crea la tabla al cargar) |
-| `LevelStats_db.sql` | Tabla SQL de referencia (opcional, el script la crea solo) |
+| File | Description |
+|------|-------------|
+| `LevelStats.lua` | Main script (auto-creates the DB table on load) |
+| `LevelStats_db.sql` | SQL reference (optional — the script creates it automatically) |
 
 ---
 
-## Requisitos
+## Requirements
 
 - AzerothCore WotLK **3.3.5a**
 - [mod-ale](https://github.com/azerothcore/mod-ale)

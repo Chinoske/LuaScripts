@@ -1,54 +1,51 @@
 # NPC Profesiones
 
-> **Autor original:** pangolp (Walter Pagani)
+> **Original author:** pangolp (Walter Pagani)
 
-NPC que sube todas las profesiones a 450 para **AzerothCore WotLK 3.3.5a** con **mod-ale**.
+NPC that maxes all professions to **450** for **AzerothCore WotLK 3.3.5a** with **mod-ale**.
 
-Solo funciona con jugadores nivel 80 que ya tengan aprendida la profesión. No otorga recetas.
-
----
-
-## Profesiones cubiertas
-
-Alquimia · Desuello · Encantamiento · Herrería · Ingeniería · Inscripción · Joyería · Minería · Peletería · Sastrería · Herboristería · Cocina · Pesca · Primeros Auxilios
+Requires level 80 and the profession already learned from a trainer. Does not grant recipes.
 
 ---
 
-## Archivos
+## Professions covered
 
-| Archivo | Descripción |
-|---------|-------------|
-| `npc_professions.lua` | Script del NPC (gossip + lógica + auto-registro en DB) |
+Alchemy · Skinning · Enchanting · Blacksmithing · Engineering · Inscription · Jewelcrafting · Mining · Leatherworking · Tailoring · Herbalism · Cooking · Fishing · First Aid
 
 ---
 
-## Instalación
+## Files
+
+| File | Description |
+|------|-------------|
+| `npc_professions.lua` | NPC script (gossip + logic + auto DB registration) |
+
+---
+
+## Installation
 
 ```
 npc_professions.lua  →  <server>/lua_scripts/
-```
-
-Al cargar el script, registra automáticamente el NPC en la base de datos si no existe.
-Si es la primera vez que se instala, reiniciar el servidor una vez para que el cache se actualice.
-
-```
 .reload ale
 ```
+
+The script automatically registers the NPC in the database if it does not exist.  
+On a fresh install, restart the server once after the first load to update the creature cache.
 
 ---
 
 ## NPC
 
-| Campo | Valor |
+| Field | Value |
 |-------|-------|
 | Entry | 200004 |
-| Nombre | Oscar Isidro Parrilli |
-| Subtítulo | Profesiones 450 |
-| Spawn | Rasganorte (map 571) |
+| Name | Oscar Isidro Parrilli |
+| Subname | Profesiones 450 |
+| Spawn | Northrend / Dalaran (map 571) |
 
 ---
 
-## Requisitos
+## Requirements
 
 - AzerothCore WotLK **3.3.5a**
 - [mod-ale](https://github.com/azerothcore/mod-ale)

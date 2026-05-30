@@ -1,61 +1,58 @@
-# Quest Reputación Rasganorte
+# Quest Reputacion Rasganorte
 
-> **Autor original:** pangolp (Walter Pagani)
+> **Original author:** pangolp (Walter Pagani)
 
-NPC que sube las reputaciones clave de Rasganorte a **Exaltado** para **AzerothCore WotLK 3.3.5a** con **mod-ale**.
+NPC that raises key Northrend reputations to **Exalted** for **AzerothCore WotLK 3.3.5a** with **mod-ale**.
 
-Requiere nivel 80. Disponible para Alianza y Horda con opciones según facción.
+Requires level 80. Available for both Alliance and Horde with faction-specific options.
 
 ---
 
-## Reputaciones cubiertas
+## Reputations covered
 
-| Facción | Método |
+| Faction | Method |
 |---------|--------|
-| **Caballeros de la Espada de Ébano** | Completa misiones de la cadena (diferente por facción) |
-| **Kirin Tor** | Sube directamente a Exaltado |
-| **El Acuerdo del Reposo del Dragón** | Sube directamente a Exaltado |
-| **El Veredicto Cinéreo** | Sube directamente a Exaltado |
-| **Los Hijos de Hodir** | Completa misiones de la cadena |
-| **Cruzada Argenta** | Sube directamente a Exaltado |
+| **Knights of the Ebon Blade** | Completes quest chain (different per faction) |
+| **Kirin Tor** | Sets directly to Exalted |
+| **The Wyrmrest Accord** | Sets directly to Exalted |
+| **The Ashen Verdict** | Sets directly to Exalted |
+| **The Sons of Hodir** | Completes quest chain |
+| **Argent Crusade** | Sets directly to Exalted |
 
 ---
 
-## Archivos
+## Files
 
-| Archivo | Descripción |
-|---------|-------------|
-| `npc_misiones_rasganorte.lua` | Script del NPC (gossip + lógica + auto-registro en DB) |
+| File | Description |
+|------|-------------|
+| `npc_misiones_rasganorte.lua` | NPC script (gossip + logic + auto DB registration) |
 
 ---
 
-## Instalación
+## Installation
 
 ```
 npc_misiones_rasganorte.lua  →  <server>/lua_scripts/
-```
-
-Al cargar el script, registra automáticamente el NPC en la base de datos si no existe.
-Si es la primera vez que se instala, reiniciar el servidor una vez para que el cache se actualice.
-
-```
 .reload ale
 ```
+
+The script automatically registers the NPC in the database if it does not exist.  
+On a fresh install, restart the server once after the first load to update the creature cache.
 
 ---
 
 ## NPC
 
-| Campo | Valor |
+| Field | Value |
 |-------|-------|
 | Entry | 200003 |
-| Nombre | Jaime Stiuso |
-| Subtítulo | Reputaciones Rasganorte |
-| Spawn | Rasganorte (map 571) |
+| Name | Jaime Stiuso |
+| Subname | Reputaciones Rasganorte |
+| Spawn | Northrend / Dalaran (map 571) |
 
 ---
 
-## Requisitos
+## Requirements
 
 - AzerothCore WotLK **3.3.5a**
 - [mod-ale](https://github.com/azerothcore/mod-ale)

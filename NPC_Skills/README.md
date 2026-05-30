@@ -1,54 +1,51 @@
 # NPC Skills
 
-> **Autor original:** pangolp (Walter Pagani)
+> **Original author:** pangolp (Walter Pagani)
 
-NPC que sube las habilidades de armas a 400 para **AzerothCore WotLK 3.3.5a** con **mod-ale**.
+NPC that maxes weapon skills to **400** for **AzerothCore WotLK 3.3.5a** with **mod-ale**.
 
-Requiere nivel 80 y haber aprendido la habilidad previamente con el instructor. Incluye botón "Aprender todo" para subir todas las habilidades disponibles de una vez.
-
----
-
-## Habilidades cubiertas
-
-Arcos · Ballestas · Armas arrojadizas · Dagas · Arma de asta · Mazas · Mazas de dos manos · Armas de fuego · Espadas de una mano · Espadas de dos manos · Varitas · Hachas de una mano · Hachas de dos manos · Bastones · Defensa · Sin armas
+Requires level 80 and the skill already learned from a trainer. Includes an "Learn all" button to max every available skill at once.
 
 ---
 
-## Archivos
+## Skills covered
 
-| Archivo | Descripción |
-|---------|-------------|
-| `npc_skills.lua` | Script del NPC (gossip + lógica + auto-registro en DB) |
+Bows · Crossbows · Thrown · Daggers · Polearms · Maces · Two-handed Maces · Guns · One-handed Swords · Two-handed Swords · Wands · One-handed Axes · Two-handed Axes · Staves · Defense · Unarmed
 
 ---
 
-## Instalación
+## Files
+
+| File | Description |
+|------|-------------|
+| `npc_skills.lua` | NPC script (gossip + logic + auto DB registration) |
+
+---
+
+## Installation
 
 ```
 npc_skills.lua  →  <server>/lua_scripts/
-```
-
-Al cargar el script, registra automáticamente el NPC en la base de datos si no existe.
-Si es la primera vez que se instala, reiniciar el servidor una vez para que el cache se actualice.
-
-```
 .reload ale
 ```
+
+The script automatically registers the NPC in the database if it does not exist.  
+On a fresh install, restart the server once after the first load to update the creature cache.
 
 ---
 
 ## NPC
 
-| Campo | Valor |
+| Field | Value |
 |-------|-------|
 | Entry | 200005 |
-| Nombre | René Favaloro |
-| Subtítulo | Skills: 400 |
-| Spawn | Rasganorte (map 571) |
+| Name | René Favaloro |
+| Subname | Skills: 400 |
+| Spawn | Northrend / Dalaran (map 571) |
 
 ---
 
-## Requisitos
+## Requirements
 
 - AzerothCore WotLK **3.3.5a**
 - [mod-ale](https://github.com/azerothcore/mod-ale)

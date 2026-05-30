@@ -1,121 +1,121 @@
 # SpellCharges
 
-> **Autor original:** Crow (crow0385)
+> **Original author:** Crow (crow0385)
 
-Sistema de cargas para hechizos en **AzerothCore WotLK 3.3.5a** con **mod-ale** + **AIO v1.75**.
+Spell charge system for **AzerothCore WotLK 3.3.5a** with **mod-ale** + **AIO v1.75**.
 
-Permite asignar un número máximo de cargas a cualquier hechizo del juego. Las cargas se recargan automáticamente con un cooldown configurable y se muestran en la action bar del cliente en tiempo real.
-
----
-
-## ¿Cómo funciona?
-
-- Configuras en la base de datos qué hechizos tienen cargas, cuántas y cada cuánto tiempo se recargan.
-- Al lanzar el hechizo, se consume una carga. Si no hay cargas disponibles, el hechizo se cancela.
-- Las cargas se recuperan automáticamente pasado el cooldown configurado.
-- Los rangos del mismo hechizo pueden compartir el mismo pool de cargas (`group_id`).
-- La action bar muestra el número de cargas restantes y el cooldown de recarga en tiempo real (addon AIO).
+Assigns a maximum number of charges to any spell. Charges recharge automatically on a configurable cooldown and are displayed on the client's action bar in real time.
 
 ---
 
-## Archivos
+## How it works
 
-| Archivo | Descripción |
-|---------|-------------|
-| `spell_charges.lua` | Script servidor — lógica de cargas, eventos, timers, comunicación AIO |
-| `spell_charges_client.lua` | Addon cliente (se envía automáticamente vía AIO) — actualiza action bars |
-| `spell_charges.sql` | Tabla de configuración de hechizos en `acore_world` |
+- Configure which spells have charges, how many, and the recharge time in the database.
+- Casting a spell consumes one charge. If no charges are available, the cast is cancelled.
+- Charges recover automatically after the configured cooldown.
+- Spell ranks can share the same charge pool via `group_id`.
+- The action bar shows remaining charges and recharge cooldown in real time (AIO addon).
 
 ---
 
-## Requisitos
+## Files
+
+| File | Description |
+|------|-------------|
+| `spell_charges.lua` | Server script — charge logic, events, timers, AIO communication |
+| `spell_charges_client.lua` | Client addon (auto-sent via AIO) — updates action bars |
+| `spell_charges.sql` | Spell configuration table in `acore_world` |
+
+---
+
+## Requirements
 
 - AzerothCore WotLK **3.3.5a**
 - [mod-ale](https://github.com/azerothcore/mod-ale)
-- [AIO v1.75](https://github.com/Rochet2/AIO) — servidor en `lua_scripts/AIO_Server/`, cliente en `WoW/Interface/AddOns/AIO_Client/`
+- [AIO v1.75](https://github.com/Rochet2/AIO) — server at `lua_scripts/AIO_Server/`, client at `WoW/Interface/AddOns/AIO_Client/`
 
 ---
 
-## Instalación
+## Installation
 
-### 1. Instalar AIO (si aún no está instalado)
+### 1. Install AIO (if not already installed)
 ```
 AIO_Server/  →  <server>/lua_scripts/AIO_Server/
 AIO_Client/  →  WoW/Interface/AddOns/AIO_Client/
 ```
 
-### 2. Aplicar el SQL en acore_world
+### 2. Apply the SQL to acore_world
 ```bash
 mysql -u acore -p acore_world < spell_charges.sql
 ```
 
-### 3. Configurar hechizos
-Edita `spell_charges.sql` o inserta directamente en la tabla:
+### 3. Configure spells
+Edit `spell_charges.sql` or insert directly into the table:
 ```sql
 INSERT INTO `spell_charges_spells` (`spell_id`, `group_id`, `max_charges`, `base_cooldown`)
 VALUES
-  (1953, 0, 2, 15000)  -- Blink: 2 cargas, 15s de recarga
+  (1953, 0, 2, 15000)  -- Blink: 2 charges, 15s recharge
 ON DUPLICATE KEY UPDATE
   `group_id` = VALUES(`group_id`),
   `max_charges` = VALUES(`max_charges`),
   `base_cooldown` = VALUES(`base_cooldown`);
 ```
 
-### 4. Copiar el script Lua
+### 4. Copy the Lua scripts
 ```
 spell_charges.lua        →  <server>/lua_scripts/
 spell_charges_client.lua →  <server>/lua_scripts/
 ```
 
-### 5. Recargar
+### 5. Reload
 ```
 .reload ale
 ```
 
 ---
 
-## Tabla `spell_charges_spells`
+## Table `spell_charges_spells`
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `spell_id` | INT UNSIGNED | ID del hechizo (Spell.dbc) |
-| `group_id` | INT UNSIGNED | `0` = pool propio · mismo valor = pool compartido entre rangos |
-| `max_charges` | TINYINT UNSIGNED | Cargas máximas (mínimo 2) |
-| `base_cooldown` | INT UNSIGNED | Tiempo de recarga por carga **en milisegundos** |
-
----
-
-## Ejemplos incluidos en el SQL
-
-| Hechizo | group_id | Cargas | Recarga |
-|---------|----------|--------|---------|
-| Heroism / Bloodlust (pool compartido) | 32182 | 2 | 5 min |
-| Flash Heal (todos los rangos) | 2061 | 3 | 8 s |
-| Shield Bash (todos los rangos) | 72 | 2 | 12 s |
-| Blink | 0 (propio) | 2 | 15 s |
+| Column | Type | Description |
+|--------|------|-------------|
+| `spell_id` | INT UNSIGNED | Spell ID (Spell.dbc) |
+| `group_id` | INT UNSIGNED | `0` = own pool · same value = shared pool across ranks |
+| `max_charges` | TINYINT UNSIGNED | Maximum charges (minimum 2) |
+| `base_cooldown` | INT UNSIGNED | Recharge time per charge **in milliseconds** |
 
 ---
 
-## Comando GM
+## Included SQL examples
+
+| Spell | group_id | Charges | Recharge |
+|-------|----------|---------|----------|
+| Heroism / Bloodlust (shared pool) | 32182 | 2 | 5 min |
+| Flash Heal (all ranks) | 2061 | 3 | 8 s |
+| Shield Bash (all ranks) | 72 | 2 | 12 s |
+| Blink | 0 (own) | 2 | 15 s |
+
+---
+
+## GM command
 
 ```
 .spellcharges reset
 ```
-Reinicia las cargas del jugador actual a máximo (requiere GM rank 3).
+Resets the current player's charges to maximum (requires GM rank 3).
 
 ---
 
-## Comando cliente
+## Client command
 
 ```
 /spellcharges
 ```
-Muestra en el chat cuántos hechizos con cargas conoce el cliente y cuántos botones de la action bar están activos.
+Shows in chat how many tracked spells the client knows and how many action bar buttons are active.
 
 ---
 
-## Notas
+## Notes
 
-- Las cargas se mantienen en memoria del servidor. Si el servidor se reinicia, se restablecen al máximo.
-- Tras 15 minutos desconectado, las cargas se recalculan automáticamente según el tiempo transcurrido.
-- El addon cliente se distribuye automáticamente vía AIO — los jugadores no necesitan instalar nada.
+- Charges are kept in server memory. A server restart resets them to maximum.
+- After 15 minutes offline, charges are recalculated automatically based on elapsed time.
+- The client addon is distributed automatically via AIO — players do not need to install anything.
