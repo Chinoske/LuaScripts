@@ -1,5 +1,7 @@
 # Quest Reputación Rasganorte
 
+> **Autor original:** pangolp (Walter Pagani)
+
 NPC que sube las reputaciones clave de Rasganorte a **Exaltado** para **AzerothCore WotLK 3.3.5a** con **mod-ale**.
 
 Requiere nivel 80. Disponible para Alianza y Horda con opciones según facción.

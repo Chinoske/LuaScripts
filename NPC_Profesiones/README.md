@@ -1,5 +1,7 @@
 # NPC Profesiones
 
+> **Autor original:** pangolp (Walter Pagani)
+
 NPC que sube todas las profesiones a 450 para **AzerothCore WotLK 3.3.5a** con **mod-ale**.
 
 Solo funciona con jugadores nivel 80 que ya tengan aprendida la profesión. No otorga recetas.

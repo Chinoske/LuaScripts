@@ -1,3 +1,4 @@
+-- Original author: pangolp (Walter Pagani)
 -- Actualizado para mod-ale (AzerothCore Lua Engine) WotLK 3.3.5a
 -- Correcciones: GossipMenuAddItem 7 params, GossipSetText local, checkSpells local,
 --               logica de "Aprender todo" simplificada, nombres de params normalizados

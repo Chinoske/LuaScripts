@@ -1,3 +1,4 @@
+-- Original author: pangolp (Walter Pagani)
 -- Actualizado para mod-ale (AzerothCore Lua Engine) WotLK 3.3.5a
 -- Correcciones: GossipMenuAddItem 7 params, GossipSetText local, nombres de params normalizados,
 --               logica del boton Cerrar Menu corregida (se muestra cuando itemCount == 0)

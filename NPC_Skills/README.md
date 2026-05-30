@@ -1,5 +1,7 @@
 # NPC Skills
 
+> **Autor original:** pangolp (Walter Pagani)
+
 NPC que sube las habilidades de armas a 400 para **AzerothCore WotLK 3.3.5a** con **mod-ale**.
 
 Requiere nivel 80 y haber aprendido la habilidad previamente con el instructor. Incluye botón "Aprender todo" para subir todas las habilidades disponibles de una vez.

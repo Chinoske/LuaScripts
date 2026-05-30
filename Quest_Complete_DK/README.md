@@ -1,5 +1,7 @@
 # Quest Complete DK
 
+> **Autor original:** pangolp (Walter Pagani)
+
 NPC que completa automáticamente todas las misiones de la zona de inicio del **Caballero de la Muerte** para **AzerothCore WotLK 3.3.5a** con **mod-ale**.
 
 Solo disponible para personajes clase DK que aún no hayan completado la cadena de inicio. Al terminar, teleporta al jugador a su ciudad capital según facción y raza.
