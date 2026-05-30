@@ -150,45 +150,71 @@ local function SyncStatsFromDB(player)
 end
 
 -- Hook: ON_LEVEL_CHANGE
+-- Soporta saltos de nivel (ej: nivel 1 → 80 de golpe).
+-- Un roll aleatorio de stat por cada nivel ganado.
 local function OnLevelChange(event, player, oldLevel)
     if not player then return end
 
-    -- Anti-double-roll guard: some core events fire this hook twice for the
-    -- same level. We ensure each level is processed only once.
     local currentLevel  = player:GetLevel()
     local lastProcessed = GetLastProcessed(player)
-    if lastProcessed == currentLevel then
-        dbg("OnLevelChange: level", currentLevel, "already processed, skipping")
+
+    -- startFrom = el nivel más alto ya procesado.
+    -- Usa math.max(oldLevel, lastProcessed) para no repetir niveles
+    -- si el hook se dispara dos veces (bug del core) o si ya hay progreso guardado.
+    local startFrom = math.max(
+        (oldLevel and oldLevel > 0) and oldLevel or (currentLevel - 1),
+        lastProcessed or 0
+    )
+
+    if startFrom >= currentLevel then
+        dbg("OnLevelChange: ya procesado hasta", currentLevel, "— skip")
         return
     end
+
+    -- Marcar como procesado antes del loop (evita re-entrada si el hook vuelve a disparar)
     SetLastProcessed(player, currentLevel)
 
-    -- Random roll
-    local statID   = math.random(0, 4)
-    local amount   = math.random(Config.MinAmount, Config.MaxAmount)
-    local statData = Config.Stats[statID]
-    local guid     = tonumber(player:GetGUIDLow()) or 0
+    local guid        = tonumber(player:GetGUIDLow()) or 0
+    local levelsGained = currentLevel - startFrom
+    local lastStatData, lastAmount
 
-    -- 1. Persist to DB (cumulative INSERT/UPSERT)
-    CharDBExecute(string.format(
-        "INSERT INTO custom_level_stats (guid, `%s`) VALUES (%d, %d) " ..
-        "ON DUPLICATE KEY UPDATE `%s` = `%s` + %d",
-        statData.db, guid, amount, statData.db, statData.db, amount
-    ))
+    -- Un roll por cada nivel ganado (1 nivel normal ó N niveles en salto masivo)
+    for lvl = startFrom + 1, currentLevel do
+        local statID   = math.random(0, 4)
+        local amount   = math.random(Config.MinAmount, Config.MaxAmount)
+        local statData = Config.Stats[statID]
 
-    dbg(player:GetName(), "reached level", currentLevel, "->", statData.name, "+" .. amount)
+        CharDBExecute(string.format(
+            "INSERT INTO custom_level_stats (guid, `%s`) VALUES (%d, %d) " ..
+            "ON DUPLICATE KEY UPDATE `%s` = `%s` + %d",
+            statData.db, guid, amount, statData.db, statData.db, amount
+        ))
 
-    -- 2. Reapply auras after a short delay so the level-up sequence finishes
-    --    before we touch the player's aura slots.
+        dbg(player:GetName(), "nivel", lvl, "->", statData.name, "+" .. amount)
+        lastStatData = statData
+        lastAmount   = amount
+    end
+
+    -- Reaplica auras con delay y notifica al jugador
     player:RegisterEvent(function(eventId, delay, repeats, worldobject)
         local p = worldobject and worldobject:ToPlayer() or player
         if not p or not p:IsInWorld() then return end
         SyncStatsFromDB(p)
-        p:SendAreaTriggerMessage("Level Up Bonus: +" .. amount .. " " .. statData.name .. "!")
-        p:SendBroadcastMessage(string.format(
-            "|cff00ff00[Level Bonus]:|r Gained |cff%s+%d %s|r.",
-            statData.color, amount, statData.name
-        ))
+
+        if levelsGained == 1 then
+            -- Subida normal: mostrar el stat ganado
+            p:SendAreaTriggerMessage("Level Up Bonus: +" .. lastAmount .. " " .. lastStatData.name .. "!")
+            p:SendBroadcastMessage(string.format(
+                "|cff00ff00[Level Bonus]:|r Gained |cff%s+%d %s|r.",
+                lastStatData.color, lastAmount, lastStatData.name
+            ))
+        else
+            -- Salto masivo de niveles: resumen + invitar a usar .bonus
+            p:SendBroadcastMessage(string.format(
+                "|cff00ff00[Level Bonus]:|r |cffFFD700%d niveles|r de bonuses aplicados. Usa |cffFFFF00.bonus|r para ver tus stats totales.",
+                levelsGained
+            ))
+        end
     end, Config.SyncDelayMs, 1)
 end
 
