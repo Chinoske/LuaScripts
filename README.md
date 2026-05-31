@@ -9,6 +9,7 @@ Lua scripts for **AzerothCore WotLK 3.3.5a** with **[mod-ale](https://github.com
 | | Script | Description |
 |:---:|--------|-------------|
 | 🗺️ | [Portal Master](./Portal_Master/) | Teleporter NPC with 130+ destinations across all expansions |
+| ⚔️ | [1VS1](./1VS1/) | 1v1 PvP queue system with rounds, countdown and auto-forfeit |
 | 📈 | [LevelStats](./LevelStats/) | Random stat bonus on level up — supports bulk level jumps |
 | ☠️ | [Scarlet Enclave DK](./Scarlet_Enclave_DK/) | Full Death Knight starting zone reimplemented in Lua |
 | ⚡ | [SpellCharges](./SpellCharges/) | Spell charge system with real-time UI (requires AIO) |
