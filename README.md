@@ -18,6 +18,7 @@ Lua scripts for **AzerothCore WotLK 3.3.5a** with **[mod-ale](https://github.com
 | ⚔️ | [NPC Skills](./NPC_Skills/) | NPC that maxes weapon skills to 400 |
 | 💀 | [Quest Complete DK](./Quest_Complete_DK/) | NPC that completes the entire DK starting quest chain |
 | 🏆 | [Quest Reputacion Rasganorte](./Quest_Reputacion_Rasganorte/) | NPC that raises Northrend reputations to Exalted |
+| 🔥 | [SuperSaiyan](./SuperSaiyan/) | Super Saiyan Ki system with cinematic transformation + Val'kyr resurrection |
 
 ---
 
