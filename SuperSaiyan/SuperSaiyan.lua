@@ -400,33 +400,6 @@ local function IsInCooldown(player)
 end
 
 -- Muestra el Ki actual al jugador como mensaje de area trigger (pantalla)
-local function ShowKiMessage(player)
-    local guid = player:GetGUIDLow()
-    local ki = playerKi[guid] or 0
-    local lastShown = playerLastKiMsg[guid] or -1
-
-    -- Solo mostrar si cambio suficiente o llego a maximo/cero
-    if math.abs(ki - lastShown) >= CFG.KI_MSG_THRESHOLD or ki == CFG.KI_MAX or ki == 0 then
-        local bar = ""
-        local filled = math.floor(ki / 10)
-        for i = 1, 10 do
-            if i <= filled then
-                bar = bar .. "|"
-            else
-                bar = bar .. "."
-            end
-        end
-
-        local msg = "Ki: " .. ki .. "/" .. CFG.KI_MAX .. "  [" .. bar .. "]"
-
-        if ki == CFG.KI_MAX and not playerTransformed[guid] and not playerSequencing[guid] then
-            msg = msg .. " -- !TRANSFORMACION INMINENTE!"
-        end
-
-        player:SendAreaTriggerMessage(msg)
-        playerLastKiMsg[guid] = ki
-    end
-end
 
 -- Agrega Ki al jugador, con clamping a KI_MAX
 -- Retorna true si al agregar este Ki se llega exactamente a KI_MAX (para activar transformacion)
@@ -441,8 +414,6 @@ local function AddKi(player, amount)
     local newKi = math.min(current + amount, CFG.KI_MAX)
     playerKi[guid] = newKi
     SendKiUI(player)
-
-    ShowKiMessage(player)
 
     -- Retornar true si AHORA llego a KI_MAX y antes no estaba ahi
     return wasBelow and (newKi >= CFG.KI_MAX)
@@ -485,7 +456,6 @@ local function SequenceSalida(player)
         local p = GetPlayerByGUID(guid)
         if not p or not p:IsAlive() then return end
         p:SendBroadcastMessage("|cFF808080[Super Saiyan]|r Ki agotado. La transformacion ha terminado.")
-        p:SendAreaTriggerMessage("Acumula Ki para volver a transformarte.")
     end, 1000, 1)
 
     print("[SuperSaiyan] " .. name .. " salio de Super Saiyan (Ki agotado).")
@@ -705,10 +675,6 @@ local function SequenceTransformacion(player)
     -- t=15000ms: anuncio global — 1.2s despues de la transformacion
     CreateLuaEvent(function(e)
         SendWorldMessage("|cFFFFD700[Super Saiyan]|r |cFF00FF00" .. name .. "|r SE HA TRANSFORMADO EN |cFFFFD700SUPER SAIYAN|r!")
-        local p = GetPlayerByGUID(guid)
-        if p and p:IsAlive() then
-            p:SendAreaTriggerMessage("Ki se drena " .. CFG.KI_DRAIN_PER_SECOND .. "/seg. Mantente en combate!")
-        end
     end, 15000, 1)
 
     -- t=16500ms: pose de combate — 1.5s despues del anuncio
@@ -767,7 +733,6 @@ local function CancelTransformation(player, reason)
     -- Mensaje al jugador
     local msg = reason or "La transformacion ha terminado."
     player:SendBroadcastMessage("|cFF808080[Super Saiyan]|r " .. msg)
-    player:SendAreaTriggerMessage("Transformacion cancelada. Acumula Ki para volver a transformarte.")
 
     print("[SuperSaiyan] " .. name .. " salio de Super Saiyan (" .. msg .. ")")
 end
@@ -808,11 +773,6 @@ local function OnGlobalTimer(event)
             if playerTransformed[guid] then
                 -- Drenar Ki
                 local reached_zero = DrainKi(player, CFG.KI_DRAIN_PER_SECOND)
-
-                -- Mostrar Ki actual al jugador cada segundo durante transformacion
-                local ki = playerKi[guid] or 0
-                player:SendAreaTriggerMessage("Super Saiyan - Ki: " .. ki .. "/" .. CFG.KI_MAX)
-
 
                 -- Si llego a 0, activar secuencia de salida
                 if reached_zero then
@@ -1213,6 +1173,96 @@ local function OnCommand(event, player, command, chatHandler)
 end
 
 RegisterPlayerEvent(42, OnCommand)
+
+-- ============================================================
+-- CLEANUP DE RELOAD
+-- Se ejecuta cada vez que el script se carga (.reload ale o arranque).
+-- Detecta jugadores con efectos SS activos (aura o velocidad alta)
+-- y los restaura aunque no existan datos en las tablas de estado.
+-- ============================================================
+local function CleanupOnReload()
+    local players = GetPlayersInWorld()
+    if not players then return end
+
+    for _, player in pairs(players) do
+        if not player or not player:IsInWorld() then goto skip end
+
+        local guid = player:GetGUIDLow()
+
+        -- Detectar estado SS por aura caracteristica o velocidad boosteada
+        local wasTransformed = player:HasAura(CFG.AURA_SPELL_POWER)
+                            or player:HasAura(CFG.AURA_SPELL_SURGE)
+                            or player:GetSpeed(CFG.MOVE_RUN) >= 5.0
+
+        if wasTransformed then
+            -- Velocidad y escala
+            player:SetSpeed(CFG.MOVE_RUN, 1.0, true)
+            player:SetScale(1.0)
+
+            -- Remover todas las auras SS
+            player:RemoveAura(CFG.AURA_SPELL_SURGE)
+            player:RemoveAura(CFG.AURA_SPELL_RADIANT)
+            player:RemoveAura(CFG.AURA_SPELL_SWIRL)
+            player:RemoveAura(CFG.AURA_SPELL_POWER)
+            player:RemoveAura(CFG.LIGHTNING_SPELL_2)
+            player:RemoveAura(6524)
+
+            -- Restaurar stats sin los datos originales:
+            -- boost = stat_base * (STAT_MULTIPLIER - 1), por lo tanto
+            -- original = current / STAT_MULTIPLIER
+            -- revertir = -bonus = -(current - current/STAT_MULTIPLIER)
+            for i = 0, 4 do
+                local cur    = player:GetStat(i)
+                local orig   = math.floor(cur / CFG.STAT_MULTIPLIER)
+                local bonus  = cur - orig
+                if bonus > 0 then
+                    player:HandleStatFlatModifier(i, 1, -bonus, true)
+                    player:SetUInt32Value(UNIT_FIELD_STAT_BASE + i, orig)
+                end
+            end
+
+            -- Restaurar HP (dividir por multiplicador)
+            local curMaxHP = player:GetMaxHealth()
+            local origMaxHP = math.floor(curMaxHP / CFG.STAT_MULTIPLIER)
+            if origMaxHP > 0 then
+                player:SetMaxHealth(origMaxHP)
+                if player:GetHealth() > origMaxHP then
+                    player:SetHealth(origMaxHP)
+                end
+            end
+
+            -- Limpiar equipo SS
+            for _, gear in ipairs(SS_GEAR_SLOTS) do
+                pcall(function() player:RemoveItem(gear.entry, 99) end)
+            end
+
+            -- Restaurar cabello
+            pcall(function() ForceNormalHair(player) end)
+
+            -- Limpiar clima
+            SendWeatherToPlayer(player, 0, 0.0, true)
+
+            -- Emote normal
+            player:EmoteState(26)
+
+            player:SendBroadcastMessage("|cFFFF8000[Super Saiyan]|r Sistema recargado. Estado Super Saiyan restaurado.")
+            print("[SuperSaiyan] CleanupOnReload: " .. player:GetName() .. " restaurado desde estado SS.")
+        end
+
+        -- Reiniciar tablas de estado para este jugador
+        playerKi[guid]            = playerKi[guid] or CFG.KI_START
+        playerTransformed[guid]   = false
+        playerSequencing[guid]    = false
+        playerOriginalStats[guid] = nil
+        playerOriginalHP[guid]    = nil
+        playerCooldown[guid]      = nil
+        playerLastKiMsg[guid]     = -1
+
+        ::skip::
+    end
+end
+
+CleanupOnReload()
 
 -- ============================================================
 -- LOG de inicio
