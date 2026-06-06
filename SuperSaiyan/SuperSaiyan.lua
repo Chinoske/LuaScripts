@@ -30,6 +30,10 @@
 --   EMOTE_STATE_STAND        = 26
 -- ============================================================
 
+-- ─── AIO — Interfaz de Ki ──────────────────────────────────────
+local AIO = AIO or require("AIO")
+if AIO.IsMainState and not AIO.IsMainState() then return end
+
 -- ============================================================
 -- CONFIGURACION — modificar aqui segun preferencia
 -- ============================================================
@@ -147,6 +151,19 @@ local playerOriginalStats = {}   -- Stats originales antes de x10 [guidLow] = {[
 local playerOriginalHP    = {}   -- MaxHealth original antes de x10 [guidLow] = number
 local playerSavedGear     = {}   -- Equipo original antes de equipar gear GM [guidLow] = {[slot]=entry}
 local playerOriginalHair  = {}   -- Cabello original antes del SS [guidLow] = {color=n, style=n}
+
+-- ─── AIO — Enviar estado de Ki al cliente ─────────────────────
+local function SendKiUI(player)
+    local guid  = player:GetGUIDLow()
+    local ki    = playerKi[guid] or 0
+    local state = "normal"
+    if playerTransformed[guid] then
+        state = "transformed"
+    elseif playerSequencing[guid] then
+        state = "sequencing"
+    end
+    AIO.Msg():Add("SS_KiUpdate", ki, state):Send(player)
+end
 
 -- ============================================================
 -- FUNCIONES AUXILIARES
@@ -423,6 +440,7 @@ local function AddKi(player, amount)
     local wasBelow = current < CFG.KI_MAX
     local newKi = math.min(current + amount, CFG.KI_MAX)
     playerKi[guid] = newKi
+    SendKiUI(player)
 
     ShowKiMessage(player)
 
@@ -437,6 +455,7 @@ local function DrainKi(player, amount)
     local current = playerKi[guid] or 0
     local newKi = math.max(current - amount, 0)
     playerKi[guid] = newKi
+    SendKiUI(player)
     return (newKi == 0)
 end
 
@@ -466,7 +485,7 @@ local function SequenceSalida(player)
         local p = GetPlayerByGUID(guid)
         if not p or not p:IsAlive() then return end
         p:SendBroadcastMessage("|cFF808080[Super Saiyan]|r Ki agotado. La transformacion ha terminado.")
-        p:SendAreaTriggerMessage("Cooldown: " .. CFG.TRANSFORM_COOLDOWN .. " seg.")
+        p:SendAreaTriggerMessage("Acumula Ki para volver a transformarte.")
     end, 1000, 1)
 
     print("[SuperSaiyan] " .. name .. " salio de Super Saiyan (Ki agotado).")
@@ -482,6 +501,7 @@ local function SequenceTransformacion(player)
 
     -- Marcar como en secuencia para bloquear AddKi y evitar doble trigger
     playerSequencing[guid] = true
+    SendKiUI(player)
 
     -- ══════════════════════════════════════════════════════════════
     -- FASE 1 — DESPERTAR (0-2s)
@@ -656,6 +676,7 @@ local function SequenceTransformacion(player)
 
         playerTransformed[guid] = true
         playerSequencing[guid] = false
+        SendKiUI(p)
 
         p:SetSpeed(CFG.MOVE_RUN, 7.0, true)
         p:CastSpell(p, CFG.AURA_SPELL_POWER, true)
@@ -712,6 +733,7 @@ local function CancelTransformation(player, reason)
 
     -- Marcar como no transformado
     playerTransformed[guid] = false
+    SendKiUI(player)
 
     -- Restaurar velocidad normal
     player:SetSpeed(CFG.MOVE_RUN, 1.0, true)
@@ -742,13 +764,10 @@ local function CancelTransformation(player, reason)
     -- Restaurar emote state a normal
     player:EmoteState(26)  -- EMOTE_STATE_STAND
 
-    -- Poner en cooldown
-    playerCooldown[guid] = os.time() + CFG.TRANSFORM_COOLDOWN
-
     -- Mensaje al jugador
     local msg = reason or "La transformacion ha terminado."
     player:SendBroadcastMessage("|cFF808080[Super Saiyan]|r " .. msg)
-    player:SendAreaTriggerMessage("Transformacion cancelada. Cooldown: " .. CFG.TRANSFORM_COOLDOWN .. " seg.")
+    player:SendAreaTriggerMessage("Transformacion cancelada. Acumula Ki para volver a transformarte.")
 
     print("[SuperSaiyan] " .. name .. " salio de Super Saiyan (" .. msg .. ")")
 end
@@ -770,6 +789,7 @@ local function ResetPlayer(player)
     playerCooldown[guid]   = nil
     playerLastKiMsg[guid]  = -1
 
+    SendKiUI(player)
     player:SendBroadcastMessage("|cFF808080[Super Saiyan]|r Tu Ki ha sido reiniciado.")
 end
 
@@ -814,10 +834,9 @@ local function OnGlobalTimer(event)
                     -- Limpiar clima al agotarse el Ki
                     SendWeatherToPlayer(player, 0, 0.0, true)
 
-                    playerCooldown[guid] = os.time() + CFG.TRANSFORM_COOLDOWN
-
                     -- Secuencia visual de salida (emotes, mensajes) — solo visual
                     SequenceSalida(player)
+                    SendKiUI(player)
                 end
             end
         end
@@ -864,6 +883,8 @@ local function OnKillCreature(event, killer, killed)
         SequenceTransformacion(killer)
     end
 end
+
+AIO.AddAddon("lua_scripts/SuperSaiyan_client.lua", "SuperSaiyanUI")
 
 RegisterPlayerEvent(7, OnKillCreature)
 
@@ -998,6 +1019,8 @@ local function OnLogin(event, player)
 
     player:SendBroadcastMessage("|cFFFFD700[Super Saiyan]|r Sistema de Ki activo. Acumula Ki en combate.")
     player:SendBroadcastMessage("|cFFFFD700[Super Saiyan]|r Al llegar a 100 Ki la transformacion se activara automaticamente!")
+
+    SendKiUI(player)
 end
 
 RegisterPlayerEvent(3, OnLogin)
