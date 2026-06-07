@@ -1189,10 +1189,8 @@ local function CleanupOnReload()
 
         local guid = player:GetGUIDLow()
 
-        -- Detectar estado SS por aura caracteristica o velocidad boosteada
-        local wasTransformed = player:HasAura(CFG.AURA_SPELL_POWER)
-                            or player:HasAura(CFG.AURA_SPELL_SURGE)
-                            or player:GetSpeed(CFG.MOVE_RUN) >= 5.0
+        -- Detectar estado SS por velocidad: SS pone 7.0x, ningun buff legitimo supera 4x
+        local wasTransformed = player:GetSpeed(CFG.MOVE_RUN) >= 5.0
 
         if wasTransformed then
             -- Velocidad y escala
